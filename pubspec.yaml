@@ -34,6 +34,8 @@ dependencies:
   unicons: ^2.0.2
   google_fonts: ^2.2.0
   material_floating_search_bar: ^0.2.6
+  http: ^0.13.4
+  email_validator: ^2.0.1
 
 dev_dependencies:
   flutter_test:

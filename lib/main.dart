@@ -6,11 +6,14 @@ import 'package:get/get.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const App());
+  runApp(App());
 }
 
 class App extends StatefulWidget {
-  const App({Key? key}) : super(key: key);
+  bool status = true;
+
+  App({Key? key}) : super(key: key);
+
   @override
   _AppState createState() => _AppState();
 }
