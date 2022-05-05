@@ -260,29 +260,29 @@ class _bottomSheetState extends State<bottomSheet> {
   }
 }
 
-Future postData() async {
-  Map data = {
-    "name": "testes",
-    "email": "email@email.com",
-    "phone_number": "086969696696",
-    "address": "jalan",
-    "password": "adm123!",
-    "password_confirmation ": "adm123!"
-  };
+// Future postData() async {
+//   Map data = {
+//     "name": "testes",
+//     "email": "email@email.com",
+//     "phone_number": "086969696696",
+//     "address": "jalan",
+//     "password": "adm123!",
+//     "password_confirmation ": "adm123!"
+//   };
 
-  try {
-    var response = await http.post(
-        Uri.parse('https://ukk-smk-2022.rahmatwahyumaakbar.com/api/register/ '),
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: json.encode(data));
-    print(response.body);
-  } catch (e) {
-    print(e.toString());
-  }
-}
+//   try {
+//     var response = await http.post(
+//         Uri.parse('https://ukk-smk-2022.rahmatwahyumaakbar.com/api/register/ '),
+//         headers: {
+//           "Accept": "application/json",
+//           "Content-Type": "application/x-www-form-urlencoded"
+//         },
+//         body: json.encode(data));
+//     print(response.body);
+//   } catch (e) {
+//     print(e.toString());
+//   }
+// }
 
 Future<Register> registerUser(
   String name,
@@ -295,23 +295,25 @@ Future<Register> registerUser(
   const String apiUrl =
       'https://ukk-smk-2022.rahmatwahyumaakbar.com/api/register/ ';
 
-  final response = await http.post(Uri.parse(apiUrl), headers: {
-    "Accept": "application/json",
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-  }, body: {
-    "name": name,
-    "email": email,
-    "phone_number": phoneNumber,
-    "address": address,
-    "password": password,
-    "password_confirmation": passwordConfirmation
-  });
+  final response = await http.post(Uri.parse(apiUrl),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      body: jsonEncode({
+        "name": name,
+        "email": email,
+        "phone_number": phoneNumber,
+        "address": address,
+        "password": password,
+        "password_confirmation": passwordConfirmation
+      }));
 
   if (response.statusCode == 201) {
     final responseString = response.body;
 
     return registerFromJson(responseString);
   } else {
-    return registerFromJson(response.body);
+    throw Exception('Failed to create account');
   }
 }

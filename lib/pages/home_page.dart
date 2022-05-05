@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
       ),
       extendBody: true,
       extendBodyBehindAppBar: true,
-      bottomNavigationBar: buildBottomNavBar(1, size, themeData),
+      bottomNavigationBar: buildBottomNavBar(0, size, themeData),
       backgroundColor: themeData.backgroundColor,
       body: SafeArea(
         child: ListView(

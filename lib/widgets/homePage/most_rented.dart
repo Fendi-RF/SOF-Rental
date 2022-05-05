@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:car_rental_app_ui/data/cars.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
 import 'package:car_rental_app_ui/widgets/homePage/car.dart';
 import 'package:car_rental_app_ui/widgets/homePage/category.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -9,6 +12,7 @@ Widget buildMostRented(Size size, ThemeData themeData) {
   return Column(
     children: [
       buildCategory('Most Rented', size, themeData, () {
+        dioGetCar();
         Get.to(CarsDetails());
       }),
       Padding(
@@ -37,4 +41,16 @@ Widget buildMostRented(Size size, ThemeData themeData) {
       ),
     ],
   );
+}
+
+void dioGetCar() async {
+  var dio = Dio();
+  final response =
+      await dio.get('https://ukk-smk-2022.rahmatwahyumaakbar.com/api/vehicles/',
+          options: Options(headers: {
+            HttpHeaders.acceptHeader: "application/json",
+            HttpHeaders.authorizationHeader:
+                "Bearer 10|5rglV0srLC2UO5KHLf4pIRE83amvIhBbrpzNMiMH"
+          }));
+  print(response.data);
 }

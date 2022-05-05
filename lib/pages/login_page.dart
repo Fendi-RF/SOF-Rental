@@ -1,12 +1,19 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:car_rental_app_ui/data/user_model.dart';
 import 'package:car_rental_app_ui/pages/home_page.dart';
 import 'package:car_rental_app_ui/widgets/loginPage/bottom_sheet.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart';
 import 'package:unicons/unicons.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -23,6 +30,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController email = TextEditingController();
+  final TextEditingController pw = TextEditingController();
 
   bool pwVisible = false;
 
@@ -79,12 +89,14 @@ class _LoginPageState extends State<LoginPage> {
                             Padding(
                               padding: const EdgeInsets.only(top: 20),
                               child: TextFormField(
+                                keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please input Username/Email';
                                   }
                                   return null;
                                 },
+                                controller: email,
                                 decoration: InputDecoration(
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.all(
@@ -92,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                                     prefixIcon: Icon(UniconsLine.envelope),
                                     fillColor: Colors.white.withOpacity(0.35),
                                     filled: true,
-                                    hintText: 'Email or Username',
+                                    hintText: 'Email Address',
                                     hintStyle: TextStyle(
                                         color: Colors.white.withOpacity(0.75))),
                               ),
@@ -100,19 +112,20 @@ class _LoginPageState extends State<LoginPage> {
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: TextFormField(
+                                controller: pw,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please input Password';
                                   }
                                   return null;
                                 },
-                                obscureText: pwVisible,
+                                obscureText: !pwVisible,
                                 decoration: InputDecoration(
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(15))),
                                     suffixIcon: IconButton(
-                                      tooltip: pwVisible
+                                      tooltip: !pwVisible
                                           ? 'Show Password'
                                           : 'Hide Password',
                                       onPressed: () {
@@ -120,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                                           pwVisible = !pwVisible;
                                         });
                                       },
-                                      icon: Icon(pwVisible
+                                      icon: Icon(!pwVisible
                                           ? UniconsLine.eye
                                           : UniconsLine.eye_slash),
                                     ),
@@ -149,8 +162,11 @@ class _LoginPageState extends State<LoginPage> {
                                         Colors.blue.withOpacity(0.75))),
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
+                                    // print(loginUser(email.text, pw.text)
+                                    //     .toString());
                                     Get.to(HomePage(),
                                         transition: Transition.downToUp);
+                                    // dioPostLogin('member1@gmail.com', '12345');
                                   }
                                 },
                                 child: Text('Login'.toUpperCase(),
@@ -204,4 +220,42 @@ class _LoginPageState extends State<LoginPage> {
       ],
     );
   }
+}
+
+Future<Login> loginUser(
+  String email,
+  String password,
+) async {
+  const String apiUrl =
+      'https://ukk-smk-2022.rahmatwahyumaakbar.com/api/token/';
+
+  final response = await http.post(Uri.parse(apiUrl),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }));
+
+  if (response.statusCode == 201) {
+    final responseString = response.body;
+
+    return loginFromJson(responseString);
+  } else {
+    throw Exception('Failed to Login');
+  }
+}
+
+void dioPostLogin(String email, String password) async {
+  var dio = Dio();
+  final response =
+      await dio.post('https://ukk-smk-2022.rahmatwahyumaakbar.com/api/token/',
+          options: Options(headers: {
+            HttpHeaders.contentTypeHeader: "application/json",
+            HttpHeaders.acceptHeader: "application/json",
+          }),
+          data: jsonEncode({"email": email, "password": password}));
+  print(response.data);
 }
