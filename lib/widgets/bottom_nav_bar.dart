@@ -1,3 +1,4 @@
+import 'package:car_rental_app_ui/pages/all_cars.dart';
 import 'package:car_rental_app_ui/pages/home_page.dart';
 import 'package:car_rental_app_ui/pages/profile_page.dart';
 import 'package:car_rental_app_ui/widgets/bottom_nav_item.dart';
@@ -23,6 +24,7 @@ Widget buildBottomNavBar(int currIndex, Size size, ThemeData themeData) {
         if (value == 0) {
           Get.off(const HomePage(), transition: Transition.noTransition);
         } else if (value == 1) {
+          Get.off(AllCarsPage(), transition: Transition.noTransition);
           // TODO : make a Cars page
         } else {
           Get.off(ProfilePage(), transition: Transition.noTransition);

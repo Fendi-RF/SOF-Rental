@@ -26,8 +26,8 @@ class Cars {
     required this.createdAt,
     required this.updatedAt,
     required this.type,
-    required this.rental,
-    required this.brand,
+    // required this.rental,
+    // required this.brand,
   });
 
   int id;
@@ -46,8 +46,8 @@ class Cars {
   DateTime createdAt;
   DateTime updatedAt;
   Type type;
-  List<dynamic> rental;
-  Brand brand;
+  // List<dynamic> rental;
+  // Brand brand;
 
   factory Cars.fromJson(Map<String, dynamic> json) => Cars(
         id: json["id"],
@@ -66,8 +66,8 @@ class Cars {
         createdAt: DateTime.parse(json["created_at"]),
         updatedAt: DateTime.parse(json["updated_at"]),
         type: Type.fromJson(json["type"]),
-        rental: List<dynamic>.from(json["rental"].map((x) => x)),
-        brand: Brand.fromJson(json["brand"]),
+        // rental: List<dynamic>.from(json["rental"].map((x) => x)),
+        // brand: Brand.fromJson(json["brand"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -87,8 +87,8 @@ class Cars {
         "created_at": createdAt.toIso8601String(),
         "updated_at": updatedAt.toIso8601String(),
         "type": type.toJson(),
-        "rental": List<dynamic>.from(rental.map((x) => x)),
-        "brand": brand.toJson(),
+        // "rental": List<dynamic>.from(rental.map((x) => x)),
+        // "brand": brand.toJson(),
       };
 }
 

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:car_rental_app_ui/data/api_url.dart';
 import 'package:car_rental_app_ui/data/user_model.dart';
 import 'package:car_rental_app_ui/pages/home_page.dart';
 import 'package:car_rental_app_ui/widgets/loginPage/bottom_sheet.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unicons/unicons.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,6 +36,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController pw = TextEditingController();
 
   bool pwVisible = false;
+    bool _isLoading = false;
+
+    _showMsg(msg) {
+      final snackBar = SnackBar(
+        content: Text(msg),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -160,13 +169,9 @@ class _LoginPageState extends State<LoginPage> {
                                 style: ButtonStyle(
                                     backgroundColor: MaterialStateProperty.all(
                                         Colors.blue.withOpacity(0.75))),
-                                onPressed: () {
+                                onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
-                                    // print(loginUser(email.text, pw.text)
-                                    //     .toString());
-                                    Get.to(HomePage(),
-                                        transition: Transition.downToUp);
-                                    // dioPostLogin('member1@gmail.com', '12345');
+                                    _login();
                                   }
                                 },
                                 child: Text('Login'.toUpperCase(),
@@ -220,42 +225,69 @@ class _LoginPageState extends State<LoginPage> {
       ],
     );
   }
-}
 
-Future<Login> loginUser(
-  String email,
-  String password,
-) async {
-  const String apiUrl =
-      'https://ukk-smk-2022.rahmatwahyumaakbar.com/api/token/';
+  void _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+    var data = {'email': email.text, 'password': pw.text};
 
-  final response = await http.post(Uri.parse(apiUrl),
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }));
+    var res = await Network().auth(data, 'token');
+    var body = json.decode(res.body);
+    if (res.statusCode == 201) {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      localStorage.setString('token', jsonEncode(body['token']));
+      localStorage.setString('user', json.encode(body['user']));
+      Network().getToken();
+      Get.to(HomePage());
+    } else {
+      _showMsg(body['message']);
+    }
 
-  if (response.statusCode == 201) {
-    final responseString = response.body;
-
-    return loginFromJson(responseString);
-  } else {
-    throw Exception('Failed to Login');
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
 
-void dioPostLogin(String email, String password) async {
-  var dio = Dio();
-  final response =
-      await dio.post('https://ukk-smk-2022.rahmatwahyumaakbar.com/api/token/',
-          options: Options(headers: {
-            HttpHeaders.contentTypeHeader: "application/json",
-            HttpHeaders.acceptHeader: "application/json",
-          }),
-          data: jsonEncode({"email": email, "password": password}));
-  print(response.data);
+// Future<Login> loginUser(
+//   String email,
+//   String password,
+// ) async {
+//   const String apiUrl =
+//       "https://ukk-smk-2022.rahmatwahyumaakbar.com/api/token/";
+//   final response = await http.post(
+//     Uri.https('ukk-smk-2022.rahmatwahyumaakbar.com', '/api/token'),
+//     headers: {"Accept": "application/json", "Content-Type": "application/json"},
+//     body: jsonEncode({
+//       'email': email,
+//       'password': password,
+//     }),
+//   );
+
+//   if (response.statusCode == 201) {
+//     Map<String, dynamic> token = jsonDecode(response.body);
+//     apiBearerToken = token['token'];
+//     return token;
+//   } else {
+//     throw Exception('Failed to Login');
+//   }
+// }
+
+void postLogin(String email, String password) async {
+  final response = await http.post(
+    Uri.parse(baseUrl + 'token'),
+    headers: {"Accept": "application/json", "Content-Type": "application/json"},
+    body: jsonEncode({
+      'email': email,
+      'password': password,
+    }),
+  );
+  if (response.statusCode == 201) {
+    Map<String, dynamic> token = jsonDecode(response.body);
+    var getLogin = GetLogin.fromJson(token);
+    apiBearerToken = "Bearer " + getLogin.token;
+  } else {
+    throw Exception('Failed to Login');
+  }
 }

@@ -36,7 +36,17 @@ dependencies:
   material_floating_search_bar: ^0.2.6
   http: ^0.13.4
   email_validator: ^2.0.1
-  dio: ^4.0.6
+  flutter_launcher_icons_maker: ^0.10.1
+  shared_preferences: ^2.0.13
+  flutter_datetime_picker: ^1.5.1
+  date_time_picker: ^2.1.0
+  image_picker: ^0.8.5+1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/SOF_Rent_Icon.png"
+
 
 dev_dependencies:
   flutter_test:
@@ -62,8 +72,6 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/icons/SobGOGdark.png
-    - assets/icons/SobGOGlight.png
     - assets/icons/hyundai.png
     - assets/icons/volkswagen.png
     - assets/icons/bmw.png
@@ -74,6 +82,7 @@ flutter:
     - assets/icons/SOF_Rent_White.png
     - assets/icons/SOF_Rent_Black.png
     - assets/images/login_img.jpeg
+    - assets/icons/SOF_Rent_Icon.png
     
 
 

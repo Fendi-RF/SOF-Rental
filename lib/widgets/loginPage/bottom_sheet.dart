@@ -2,11 +2,17 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:car_rental_app_ui/data/api_url.dart';
 import 'package:car_rental_app_ui/data/user_model.dart';
+import 'package:car_rental_app_ui/pages/home_page.dart';
+import 'package:car_rental_app_ui/pages/login_page.dart';
+import 'package:car_rental_app_ui/widgets/registerPage/registVerif.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/http/interface/request_base.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unicons/unicons.dart';
 import 'package:http/http.dart' as http;
 
@@ -32,15 +38,25 @@ class _bottomSheetState extends State<bottomSheet> {
 
   final _formKey = GlobalKey<FormState>();
 
+  bool _isLoading = false;
+
+  _showMsg(msg) {
+    final snackBar = SnackBar(
+      content: Text(msg),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    ThemeData themeData = Theme.of(context);
 
     return Container(
       padding: EdgeInsets.all(16),
       height: size.height * 0.9,
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: themeData.backgroundColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       child: Form(
         key: _formKey,
@@ -56,7 +72,7 @@ class _bottomSheetState extends State<bottomSheet> {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text('Sign Up',
                       style: GoogleFonts.bebasNeue(
-                          color: Colors.blue, fontSize: 50)),
+                          color: themeData.secondaryHeaderColor, fontSize: 50)),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -217,10 +233,12 @@ class _bottomSheetState extends State<bottomSheet> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: TextButton(
-                    child: Text('Create new Account'.toUpperCase()),
+                    child: Text(
+                      'Create new Account'.toUpperCase(),
+                      style: TextStyle(color: themeData.secondaryHeaderColor),
+                    ),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        print('nice');
                         // final String nameString = name.text;
                         // final String emailString = email.text;
                         // final String phoneString = phone.text;
@@ -228,17 +246,7 @@ class _bottomSheetState extends State<bottomSheet> {
                         // final String pwString = pw.text;
                         // final String cpwString = cpw.text;
 
-                        // final Register register = await registerUser(
-                        //     nameString,
-                        //     emailString,
-                        //     phoneString,
-                        //     addressString,
-                        //     pwString,
-                        //     cpwString);
-
-                        // setState(() {
-                        //   _register = register;
-                        // });
+                        _registerUser();
                       }
                     },
                   ),
@@ -258,31 +266,33 @@ class _bottomSheetState extends State<bottomSheet> {
       ),
     );
   }
+
+  void _registerUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+    var data = {
+      'name': name.text,
+      'email': email.text,
+      'phone_number': phone.text,
+      'address': address.text,
+      'password': pw.text,
+      'password_confirmation': cpw.text
+    };
+
+    var res = await Network().auth(data, 'register');
+    var body = json.decode(res.body);
+    if (res.statusCode == 200) {
+      Get.to(RegisterVerif());
+    } else {
+      _showMsg(body['message']);
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 }
-
-// Future postData() async {
-//   Map data = {
-//     "name": "testes",
-//     "email": "email@email.com",
-//     "phone_number": "086969696696",
-//     "address": "jalan",
-//     "password": "adm123!",
-//     "password_confirmation ": "adm123!"
-//   };
-
-//   try {
-//     var response = await http.post(
-//         Uri.parse('https://ukk-smk-2022.rahmatwahyumaakbar.com/api/register/ '),
-//         headers: {
-//           "Accept": "application/json",
-//           "Content-Type": "application/x-www-form-urlencoded"
-//         },
-//         body: json.encode(data));
-//     print(response.body);
-//   } catch (e) {
-//     print(e.toString());
-//   }
-// }
 
 Future<Register> registerUser(
   String name,
@@ -292,8 +302,7 @@ Future<Register> registerUser(
   String password,
   String passwordConfirmation,
 ) async {
-  const String apiUrl =
-      'https://ukk-smk-2022.rahmatwahyumaakbar.com/api/register/ ';
+  String apiUrl = baseUrl + 'register/';
 
   final response = await http.post(Uri.parse(apiUrl),
       headers: {
@@ -301,12 +310,12 @@ Future<Register> registerUser(
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
       },
       body: jsonEncode({
-        "name": name,
-        "email": email,
-        "phone_number": phoneNumber,
-        "address": address,
-        "password": password,
-        "password_confirmation": passwordConfirmation
+        'name': name,
+        'email': email,
+        'phone_number': phoneNumber,
+        'address': address,
+        'password': password,
+        'password_confirmation': passwordConfirmation
       }));
 
   if (response.statusCode == 201) {

@@ -1,5 +1,10 @@
+// import 'dart:js';
 import 'dart:math';
 
+import 'package:car_rental_app_ui/data/api_url.dart';
+import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/cars.dart';
+import 'package:car_rental_app_ui/widgets/carDetailsPage/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,28 +13,9 @@ import 'package:unicons/unicons.dart';
 import '../widgets/app_bar.dart';
 
 class DetailsPage extends StatefulWidget {
-  final String carImage;
-  final String carClass;
-  final String carName;
-  final int carPower;
-  final String people;
-  final String bags;
-  final int carPrice;
-  final String carRating;
-  final bool isRotated;
+  final Cars cars;
 
-  const DetailsPage({
-    Key? key,
-    required this.carImage,
-    required this.carClass,
-    required this.carName,
-    required this.carPower,
-    required this.people,
-    required this.bags,
-    required this.carPrice,
-    required this.carRating,
-    required this.isRotated,
-  }) : super(key: key);
+  const DetailsPage({Key? key, required this.cars}) : super(key: key);
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -64,29 +50,18 @@ class _DetailsPageState extends State<DetailsPage> {
                   ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      widget.isRotated
-                          ? Image.asset(
-                              widget.carImage,
-                              height: size.width * 0.5,
-                              width: size.width * 0.8,
-                              fit: BoxFit.contain,
-                            )
-                          : Transform(
-                              alignment: Alignment.center,
-                              transform: Matrix4.rotationY(pi),
-                              child: Image.asset(
-                                widget.carImage,
-                                height: size.width * 0.5,
-                                width: size.width * 0.8,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
+                      Image.network(
+                        baseAssetUrl + widget.cars.vehicleImage,
+                        height: size.width * 0.5,
+                        width: size.width * 0.8,
+                        fit: BoxFit.contain,
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.carClass,
+                            widget.cars.vehicleYear,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: themeData.primaryColor,
@@ -95,16 +70,11 @@ class _DetailsPageState extends State<DetailsPage> {
                             ),
                           ),
                           const Spacer(),
-                          Icon(
-                            Icons.star,
-                            color: Colors.yellow[800],
-                            size: size.width * 0.06,
-                          ),
                           Text(
-                            widget.carRating,
+                            widget.cars.numberPlate,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
-                              color: Colors.yellow[800],
+                              color: themeData.primaryColor,
                               fontSize: size.width * 0.04,
                               fontWeight: FontWeight.bold,
                             ),
@@ -114,7 +84,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       Row(
                         children: [
                           Text(
-                            widget.carName,
+                            widget.cars.vehicleName,
                             textAlign: TextAlign.left,
                             style: GoogleFonts.poppins(
                               color: themeData.primaryColor,
@@ -124,7 +94,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           const Spacer(),
                           Text(
-                            '${widget.carPrice}\$',
+                            'Rp${widget.cars.rentPrice}',
                             style: GoogleFonts.poppins(
                               color: themeData.primaryColor,
                               fontSize: size.width * 0.04,
@@ -146,26 +116,19 @@ class _DetailsPageState extends State<DetailsPage> {
                           top: size.height * 0.02,
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             buildStat(
-                              UniconsLine.dashboard,
-                              '${widget.carPower} KM',
-                              'Power',
+                              UniconsLine.rainbow,
+                              'Color',
+                              '${widget.cars.vehicleColor}',
                               size,
                               themeData,
                             ),
                             buildStat(
                               UniconsLine.users_alt,
-                              'People',
-                              '( ${widget.people} )',
-                              size,
-                              themeData,
-                            ),
-                            buildStat(
-                              UniconsLine.briefcase,
-                              'Bags',
-                              '( ${widget.bags} )',
+                              'Seats',
+                              '( ${widget.cars.vehicleSeats} )',
                               size,
                               themeData,
                             ),
@@ -177,7 +140,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           vertical: size.height * 0.03,
                         ),
                         child: Text(
-                          'Select Location',
+                          'Description',
                           style: GoogleFonts.poppins(
                             color: themeData.primaryColor,
                             fontSize: size.width * 0.055,
@@ -186,87 +149,14 @@ class _DetailsPageState extends State<DetailsPage> {
                         ),
                       ),
                       Center(
-                        child: SizedBox(
-                          height: size.height * 0.15,
-                          width: size.width * 0.9,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: themeData.cardColor,
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: size.width * 0.05,
-                                    vertical: size.height * 0.015,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(
-                                        UniconsLine.map_marker,
-                                        color: const Color(0xff3b22a1),
-                                        size: size.height * 0.05,
-                                      ),
-                                      Text(
-                                        'Katowice Airport',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.poppins(
-                                          color: themeData.primaryColor,
-                                          fontSize: size.width * 0.05,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Wolności 90, 42-625 Pyrzowice',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.poppins(
-                                          color: themeData.primaryColor
-                                              .withOpacity(0.6),
-                                          fontSize: size.width * 0.032,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: size.height * 0.15,
-                                  width: size.width * 0.25,
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(10),
-                                      ),
-                                    ),
-                                    child: Align(
-                                      child: Text(
-                                        'Map Preview',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white,
-                                          fontSize: size.width * 0.04,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        child: Text(
+                          widget.cars.vehicleDescription,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
                   ),
-                  buildSelectButton(size),
+                  buildSelectButton(size, context),
                 ],
               ),
             ),
@@ -340,7 +230,7 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 }
 
-Align buildSelectButton(Size size) {
+Align buildSelectButton(Size size, BuildContext context) {
   return Align(
     alignment: Alignment.bottomCenter,
     child: Padding(
@@ -352,7 +242,8 @@ Align buildSelectButton(Size size) {
         width: size.width,
         child: InkWell(
           onTap: () {
-            //TODO: add select action
+            showModalBottomSheet(
+                context: context, builder: (context) => TransactionForm());
           },
           child: Container(
             decoration: BoxDecoration(
