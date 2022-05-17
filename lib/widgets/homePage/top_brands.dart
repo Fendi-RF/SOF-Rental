@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/API/api_url.dart';
+import 'package:car_rental_app_ui/data/models/brands.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/pages/brands_details.dart';
 import 'package:car_rental_app_ui/widgets/homePage/brand_logo.dart';
 import 'package:car_rental_app_ui/widgets/homePage/category.dart';
@@ -9,73 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-Column buildTopBrands(Size size, ThemeData themeData) {
+Column buildTopBrandsWithJson(Size size, ThemeData themeData, Future brands) {
   return Column(
     children: [
       buildCategory('Top Brands', size, themeData, () {
-        Get.to(Brands());
-      }),
-      Padding(
-        padding: EdgeInsets.only(top: size.height * 0.015),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            buildBrandLogo(
-              Image.asset(
-                'assets/icons/hyundai.png',
-                height: size.width * 0.1,
-                width: size.width * 0.15,
-                fit: BoxFit.fill,
-              ),
-              size,
-              themeData,
-            ),
-            buildBrandLogo(
-              Image.asset(
-                'assets/icons/volkswagen.png',
-                height: size.width * 0.12,
-                width: size.width * 0.12,
-                fit: BoxFit.fill,
-              ),
-              size,
-              themeData,
-            ),
-            buildBrandLogo(
-              Image.asset(
-                'assets/icons/toyota.png',
-                height: size.width * 0.08,
-                width: size.width * 0.12,
-                fit: BoxFit.fill,
-              ),
-              size,
-              themeData,
-            ),
-            buildBrandLogo(
-              Image.asset(
-                'assets/icons/bmw.png',
-                height: size.width * 0.12,
-                width: size.width * 0.12,
-                fit: BoxFit.fill,
-              ),
-              size,
-              themeData,
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-Column buildTopBrandsWithJson(Size size, ThemeData themeData) {
-  return Column(
-    children: [
-      buildCategory('Top Brands', size, themeData, () {
-        Get.to(Brands());
+        Get.to(BrandsDetails());
       }),
       TopBrandJson(
         size: size,
         themeData: themeData,
+        brands: brands,
       ),
     ],
   );
@@ -86,24 +30,26 @@ class TopBrandJson extends StatelessWidget {
     Key? key,
     required this.size,
     required this.themeData,
+    required this.brands,
   }) : super(key: key);
 
   final Size size;
   final ThemeData themeData;
+  final Future<dynamic> brands;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: size.height * 0.015),
+      padding: EdgeInsets.only(top: size.height * 0.001),
       child: FutureBuilder(
-        future: getBrands(),
+        future: brands,
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
-            List<Brand> brands = snapshot.data;
+            List<Brands> brands = snapshot.data;
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: brands
-                  .map((Brand brand) => buildBrandLogofromJson(
+                  .map((Brands brand) => buildBrandLogofromJson(
                       Image.network(
                         baseAssetUrl + brand.brandImage,
                         height: size.height * 0.05,
@@ -129,8 +75,8 @@ Future<List<dynamic>> getBrands() async {
 
   if (response.statusCode == 200) {
     List<dynamic> body = jsonDecode(response.body);
-    List<Brand> brands = body
-        .map((dynamic item) => Brand.fromJson(item))
+    List<Brands> brands = body
+        .map((dynamic item) => Brands.fromJson(item))
         .toList()
       ..sort(((a, b) => a.brandName.compareTo(b.brandName)));
     return brands;

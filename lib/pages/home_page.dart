@@ -1,16 +1,24 @@
 import 'dart:convert';
 // import 'dart:html';
+// import 'dart:html';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/API/api_url.dart';
+import 'package:car_rental_app_ui/data/API/requests.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/data/cars.dart';
+import 'package:car_rental_app_ui/data/models/user_model.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
+import 'package:car_rental_app_ui/pages/login_page.dart';
 import 'package:car_rental_app_ui/widgets/bottom_nav_bar.dart';
 import 'package:car_rental_app_ui/widgets/homePage/category.dart';
 
 import 'package:car_rental_app_ui/widgets/homePage/most_rented.dart';
+import 'package:car_rental_app_ui/widgets/homePage/search_cars.dart';
 import 'package:car_rental_app_ui/widgets/homePage/top_brands.dart';
+import 'package:car_rental_app_ui/widgets/homePage/vehicle_types.dart';
+import 'package:car_rental_app_ui/widgets/sort_by.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/response/response.dart';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -29,28 +37,53 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late List<Cars> cars;
   String query = '';
-  String name = '';
+  List<Cars> cars = [];
+
+  List<Cars> carsSearch = [];
+
+  late Future<List<dynamic>> _getBrand;
+  late Future<List<dynamic>> _getCars;
+  late Future<List<dynamic>> _getTypes;
 
   final TextEditingController controller = TextEditingController();
+
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadApi();
   }
 
   _loadUserData() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    var user = jsonDecode(localStorage.getString('user').toString());
+    var map = jsonDecode(localStorage.getString('user') ?? '');
     Network().token = jsonDecode(localStorage.getString('token').toString());
+    User user = User.fromJson(map);
+    print(user.avatar);
+  }
 
-    if (user != null) {
+  _loadApi() async {
+    _getBrand = getBrands();
+    _getCars = Request().getCars();
+    _getTypes = Request().getTypes();
+
+    final cars = await Request().getCars();
+
+    if (mounted) {
       setState(() {
-        name = user['name'];
+        this.cars = cars;
       });
     }
+  }
+
+  _showMsg(msg) {
+    final snackBar = SnackBar(
+      content: Text(msg),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -58,12 +91,11 @@ class _HomePageState extends State<HomePage> {
     Size size = MediaQuery.of(context).size; //check the size of device
     ThemeData themeData = Theme.of(context);
 
-    Future _getBrand;
-    Future _getCars;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60.0), //appbar size
-        child: AppBarMain(themeData: themeData, size: size),
+        child: AppBarMain(
+            themeData: themeData, size: size, onPressed: _showDialog),
       ),
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -72,13 +104,10 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            try {
-              await Network().getData('brands?limit=4');
-              await Network().getData('type?limit=4');
-              await Network().getData('vehicles');
-            } catch (e) {
-              throw 'Exception';
-            }
+            await Future.delayed(Duration(seconds: 15));
+            setState(() {
+              _loadApi();
+            });
           },
           child: ListView(
             children: [
@@ -103,7 +132,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: Align(
                           child: Text(
-                            'With Corporate Difference',
+                            'Fast & Easy To Rent A Car',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: themeData.secondaryHeaderColor,
@@ -119,7 +148,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: Align(
                           child: Text(
-                            'Enjoy the fun driving in Enterprise',
+                            'Source of fortune for everyone',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: themeData.secondaryHeaderColor,
@@ -131,59 +160,87 @@ class _HomePageState extends State<HomePage> {
                       Padding(
                         padding: EdgeInsets.only(
                           top: size.height * 0.03,
-                          left: size.width * 0.04,
                           bottom: size.height * 0.025,
                         ),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(
                               width: size.width * 0.65,
                               height: size.height * 0.06,
-                              child: TextField(
-                                onChanged: searchCar,
-                                controller: controller,
-                                // onChanged: (value) => final suh,
-                                //searchbar
-                                style: GoogleFonts.poppins(
-                                  color: themeData.primaryColor,
-                                ),
-                                textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.only(
-                                    top: size.height * 0.01,
-                                    left: size.width * 0.04,
-                                    right: size.width * 0.04,
-                                  ),
-                                  enabledBorder: textFieldBorder(),
-                                  focusedBorder: textFieldBorder(),
-                                  border: textFieldBorder(),
-                                  hintStyle: GoogleFonts.poppins(
+                              child: Expanded(
+                                child: TextField(
+                                  onChanged: (val) {
+                                    setState(() {
+                                      if (val != '') {
+                                        _isSearching = true;
+                                      } else {
+                                        _isSearching = false;
+                                      }
+
+                                      carsSearch = cars
+                                          .where((element) => (element
+                                              .vehicleName
+                                              .toLowerCase()
+                                              .contains(val.toLowerCase())))
+                                          .toList();
+                                    });
+                                  },
+                                  controller: controller,
+                                  // onChanged: (value) => final suh,
+                                  //searchbar
+                                  style: GoogleFonts.poppins(
                                     color: themeData.primaryColor,
                                   ),
-                                  hintText: 'Search a car',
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: size.width * 0.025,
-                              ),
-                              child: Container(
-                                height: size.height * 0.06,
-                                width: size.width * 0.14,
-                                decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(10),
+                                  textInputAction: TextInputAction.next,
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.only(
+                                      top: size.height * 0.01,
+                                      left: size.width * 0.04,
+                                      right: size.width * 0.04,
+                                    ),
+                                    enabledBorder: textFieldBorder(),
+                                    focusedBorder: textFieldBorder(),
+                                    border: textFieldBorder(),
+                                    hintStyle: GoogleFonts.poppins(
+                                      color: themeData.primaryColor,
+                                    ),
+                                    hintText: 'Search a car',
                                   ),
-                                  color: Color(0xff3b22a1), //filters bg color
-                                ),
-                                child: Icon(
-                                  UniconsLine.search,
-                                  color: Colors.white,
-                                  size: size.height * 0.032,
                                 ),
                               ),
                             ),
+                            _isSearching
+                                ? Padding(
+                                    padding: EdgeInsets.only(
+                                      left: size.width * 0.025,
+                                    ),
+                                    child: Container(
+                                      height: size.height * 0.06,
+                                      width: size.width * 0.14,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                        color: Color(
+                                            0xff3b22a1), //filters bg color
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(
+                                          UniconsLine.filter,
+                                          color: Colors.white,
+                                          size: size.height * 0.032,
+                                        ),
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                              isScrollControlled: true,
+                                              context: context,
+                                              builder: (context) => SortBy());
+                                        },
+                                      ),
+                                    ),
+                                  )
+                                : Container()
                           ],
                         ),
                       ),
@@ -191,52 +248,36 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              // controller.text != ''
-              //     ? CarsSearch(
-              //         query: controller.text,
-              //       )
-              //     :
-              buildTopBrandsWithJson(size, themeData),
-              buildCategory('Vehicle Types', size, themeData, () {}),
-              VehicleTypes(size: size, themeData: themeData),
-              buildMostRented(size, themeData),
+              _isSearching
+                  ? CarsSearchFromJsonWidget(cars: carsSearch)
+                  : Recommendation(size, themeData),
             ],
           ),
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: (CircleAvatar(
-                      child: Text('D'),
-                    )),
-                  ),
-                  Text('Data DATA Data DATA Data DATA Data DATA')
-                ],
-              ),
-              decoration: BoxDecoration(color: Colors.blue),
-            )
-          ],
-        ),
-      ),
+      // drawer: Drawer(
+      //   child: ListView(
+      //     padding: EdgeInsets.zero,
+      //     children: [
+      //       DrawerHeader(
+      //         child: Column(
+      //           mainAxisAlignment: MainAxisAlignment.start,
+      //           children: [
+      //             Padding(
+      //               padding: const EdgeInsets.all(8.0),
+      //               child: (CircleAvatar(
+      //                 child: Text('D'),
+      //               )),
+      //             ),
+      //             Text('Data DATA Data DATA Data DATA Data DATA')
+      //           ],
+      //         ),
+      //         decoration: BoxDecoration(color: Colors.blue),
+      //       )
+      //     ],
+      //   ),
+      // ),
     );
-  }
-
-  Future searchCar(String query) async {
-    final cars = await getCarsSearch(controller.text);
-    if (!mounted) return;
-
-    setState(() {
-      this.query = controller.text;
-      this.cars = cars;
-    });
   }
 
   OutlineInputBorder textFieldBorder() {
@@ -248,92 +289,61 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
 
-class VehicleTypes extends StatelessWidget {
-  const VehicleTypes({
-    Key? key,
-    required this.size,
-    required this.themeData,
-  }) : super(key: key);
+  Future searchCars(String query) async {
+    final suggestions = await Request().getCarsSearch(query);
+    if (!mounted) return;
 
-  final Size size;
-  final ThemeData themeData;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: getTypes(),
-        builder: (BuildContext buildContext, AsyncSnapshot<dynamic> snapshot) {
-          if (snapshot.hasData) {
-            List<Type> type = snapshot.data;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: type
-                  .map((Type e) => buildTypesFromJson(size, themeData, e))
-                  .toList(),
-            );
-          } else {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        });
+    setState(() {
+      _isSearching = true;
+      this.query = query;
+      cars = suggestions;
+    });
   }
-}
 
-Future<List<Type>> getTypes() async {
-  final response = await Network().getData('types?limit=4');
-
-  if (response.statusCode == 200) {
-    return parseType(response.body);
-  } else {
-    throw "Can not connect to the API";
+  Column Recommendation(Size size, ThemeData themeData) {
+    return Column(
+      children: [
+        buildTopBrandsWithJson(size, themeData, _getBrand),
+        // buildTypes(size, themeData, _getTypes),
+        buildMostRented(size, themeData, _getCars),
+      ],
+    );
   }
-}
 
-List<Type> parseType(responseBody) {
-  List<dynamic> body = jsonDecode(responseBody);
-  List<Type> type = body.map((dynamic item) => Type.fromJson(item)).toList()
-    ..sort(((a, b) => a.typeName.compareTo(b.typeName)));
-  return type;
-}
-
-Padding buildTypesFromJson(Size size, ThemeData themeData, Type type) {
-  IconData icon;
-  switch (type.typeName) {
-    case 'Motorcycle':
-      icon = UniconsLine.car_slash;
-      break;
-    case 'Car':
-      icon = UniconsLine.car;
-      break;
-    case 'Bicyle':
-      icon = UniconsLine.car_slash;
-      break;
-    default:
-      icon = UniconsLine.lock;
+  void _showDialog() {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text('Log Out'),
+              content: Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      _logout();
+                    },
+                    child: Text(
+                      'Yes',
+                      style: TextStyle(color: Colors.red),
+                    )),
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  child: Text('No'),
+                )
+              ],
+            ));
   }
-  return Padding(
-    padding: EdgeInsets.symmetric(
-        horizontal: size.width * 0.03, vertical: size.width * 0.05),
-    child: GestureDetector(
-      onTap: () {},
-      child: SizedBox(
-        height: size.width * 0.18,
-        width: size.width * 0.18,
-        child: Container(
-          child: Icon(icon),
-          decoration: BoxDecoration(
-            color: themeData.cardColor,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(
-                20,
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
+
+  void _logout() async {
+    var response = await Network().logout('logout');
+    var body = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      _showMsg(body['message']);
+      Get.off(LoginPage());
+    } else {
+      _showMsg(body['message']);
+    }
+  }
 }

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/user_model.dart';
+import 'package:car_rental_app_ui/data/API/api_url.dart';
+import 'package:car_rental_app_ui/data/models/user_model.dart';
 import 'package:car_rental_app_ui/pages/home_page.dart';
 import 'package:car_rental_app_ui/pages/login_page.dart';
 import 'package:car_rental_app_ui/widgets/registerPage/registVerif.dart';
@@ -149,6 +149,8 @@ class _bottomSheetState extends State<bottomSheet> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please input Address';
+                      } else if (value.length < 8) {
+                        return 'Address must be at least 8 characters';
                       }
                       return null;
                     },
@@ -246,7 +248,10 @@ class _bottomSheetState extends State<bottomSheet> {
                         // final String pwString = pw.text;
                         // final String cpwString = cpw.text;
 
-                        _registerUser();
+                        // _registerUser();
+                        Get.to(RegisterVerif(
+                          email: email.text,
+                        ));
                       }
                     },
                   ),
@@ -283,9 +288,13 @@ class _bottomSheetState extends State<bottomSheet> {
     var res = await Network().auth(data, 'register');
     var body = json.decode(res.body);
     if (res.statusCode == 200) {
-      Get.to(RegisterVerif());
+      _showMsg(body['message']);
+      Get.to(RegisterVerif(
+        email: email.text,
+      ));
     } else {
       _showMsg(body['message']);
+      // throw "gagal register";
     }
 
     setState(() {
@@ -302,7 +311,7 @@ Future<Register> registerUser(
   String password,
   String passwordConfirmation,
 ) async {
-  String apiUrl = baseUrl + 'register/';
+  String apiUrl = baseUrl + 'register';
 
   final response = await http.post(Uri.parse(apiUrl),
       headers: {

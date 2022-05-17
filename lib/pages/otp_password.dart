@@ -2,23 +2,23 @@ import 'dart:convert';
 
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/pages/login_page.dart';
+import 'package:car_rental_app_ui/pages/new_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:unicons/unicons.dart';
 
-class RegisterVerif extends StatefulWidget {
-  const RegisterVerif({Key? key, required this.email}) : super(key: key);
+class ResetPassVerif extends StatefulWidget {
+  const ResetPassVerif({Key? key, required this.email}) : super(key: key);
 
   @override
-  State<RegisterVerif> createState() => _RegisterVerifState();
+  State<ResetPassVerif> createState() => _ResetPassVerifState();
 
   final String email;
 }
 
-class _RegisterVerifState extends State<RegisterVerif> {
+class _ResetPassVerifState extends State<ResetPassVerif> {
   bool _isLoading = false;
   final TextEditingController controller = TextEditingController();
   String otp = '';
@@ -114,7 +114,7 @@ class _RegisterVerifState extends State<RegisterVerif> {
                         child: InkWell(
                           onTap: () {
                             if (_formKey.currentState!.validate()) {
-                              _verifyAcc();
+                              _verifyAcc;
                             }
                           },
                           child: Container(
@@ -149,25 +149,14 @@ class _RegisterVerifState extends State<RegisterVerif> {
       _isLoading = true;
     });
 
-    var data = {"email": widget.email, "token": otp};
+    var data = {};
 
-    var res = await Network().auth(data, 'verify');
+    var res = await Network().auth(data, 'reset/$otp');
     var body = json.decode(res.body);
     if (res.statusCode == 200) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(body['status']),
-          content: Text(body['message']),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Get.off(LoginPage());
-                },
-                child: Text('Ok'))
-          ],
-        ),
-      );
+      Get.off(NewPasswordForm(
+        otp: otp,
+      ));
     } else {
       _showMsg(body['message']);
       // throw "Gagal verify";

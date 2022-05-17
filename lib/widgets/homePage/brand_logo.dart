@@ -1,4 +1,5 @@
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/models/brands.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/pages/cars_brand_details.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -55,7 +56,7 @@ Padding buildBrandLogowithText(
 }
 
 Padding buildBrandLogowithTextfromJson(
-    Widget image, Size size, ThemeData themeData, String text, Brand brand) {
+    Widget image, Size size, ThemeData themeData, String text, Brands brand) {
   return Padding(
     padding: EdgeInsets.symmetric(
         horizontal: size.width * 0.03, vertical: size.width * 0.05),
@@ -85,7 +86,7 @@ Padding buildBrandLogowithTextfromJson(
 }
 
 Padding buildBrandLogofromJson(
-    Widget image, Size size, ThemeData themeData, Brand brand) {
+    Widget image, Size size, ThemeData themeData, Brands brand) {
   return Padding(
     padding: EdgeInsets.symmetric(
         horizontal: size.width * 0.03, vertical: size.width * 0.05),

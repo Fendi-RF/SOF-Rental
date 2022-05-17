@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/API/requests.dart';
+import 'package:car_rental_app_ui/data/models/brands.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/models/vehicle_spec.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
 import 'package:car_rental_app_ui/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
@@ -45,32 +47,19 @@ class CarsBrandFromJsonWidget extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
 
     return FutureBuilder(
-      future: getCarsBrand(brandName),
+      future: Request().getCarsBrand(brandName),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasData) {
-          List<Cars> cars = snapshot.data;
+          List<VehicleSpec> cars = snapshot.data;
           return ListView(
-            children: cars.map((Cars car) => buildCarList(car, size)).toList(),
+            children: cars
+                .map((VehicleSpec car) => buildCarListFromBrands(car, size))
+                .toList(),
           );
         } else {
           return Center(child: CircularProgressIndicator());
         }
       },
     );
-  }
-}
-
-Future<List<Cars>> getCarsBrand(String brandName) async {
-  final response = await Network().getData('brand/$brandName');
-
-  if (response.statusCode == 200) {
-    var body = jsonDecode(response.body);
-    List<Cars> cars = body['vehicle_spec'][0]
-        .map<Cars>((dynamic item) => Cars.fromJson(item))
-        .toList()
-      ..sort(((a, b) => a.vehicleName.compareTo(b.vehicleName)));
-    return cars;
-  } else {
-    throw "Can not connect to the API";
   }
 }

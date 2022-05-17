@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/user_model.dart';
+import 'package:car_rental_app_ui/data/API/api_url.dart';
+import 'package:car_rental_app_ui/data/models/user_model.dart';
+import 'package:car_rental_app_ui/pages/forget_password.dart';
 import 'package:car_rental_app_ui/pages/home_page.dart';
 import 'package:car_rental_app_ui/widgets/loginPage/bottom_sheet.dart';
 import 'package:flutter/cupertino.dart';
@@ -36,14 +37,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController pw = TextEditingController();
 
   bool pwVisible = false;
-    bool _isLoading = false;
+  bool _isLoading = false;
 
-    _showMsg(msg) {
-      final snackBar = SnackBar(
-        content: Text(msg),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
+  _showMsg(msg) {
+    final snackBar = SnackBar(
+      content: Text(msg),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +67,10 @@ class _LoginPageState extends State<LoginPage> {
                   Container(
                     color: Colors.black.withOpacity(0.23),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                        left: 20, top: size.height / 4, right: 20),
+                  Positioned.fill(
+                    left: 20,
+                    top: size.height / 4,
+                    right: 20,
                     child: SingleChildScrollView(
                       physics: BouncingScrollPhysics(),
                       child: Form(
@@ -85,16 +87,15 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Text('Welcome'.toUpperCase(),
+                              child: Text('Welcome,'.toUpperCase(),
                                   style: GoogleFonts.roboto(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 30,
-                                      color: Colors.white.withOpacity(0.65))),
+                                      color: Colors.white)),
                             ),
-                            Text('Long time no see.',
+                            Text(greetingMessage(),
                                 style: GoogleFonts.rubik(
-                                    fontSize: 65,
-                                    color: Colors.white.withOpacity(0.80))),
+                                    fontSize: 65, color: Colors.white)),
                             Padding(
                               padding: const EdgeInsets.only(top: 20),
                               child: TextFormField(
@@ -111,11 +112,11 @@ class _LoginPageState extends State<LoginPage> {
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(15))),
                                     prefixIcon: Icon(UniconsLine.envelope),
-                                    fillColor: Colors.white.withOpacity(0.35),
+                                    fillColor: Colors.white.withOpacity(0.40),
                                     filled: true,
                                     hintText: 'Email Address',
-                                    hintStyle: TextStyle(
-                                        color: Colors.white.withOpacity(0.75))),
+                                    hintStyle: TextStyle(color: Colors.white),
+                                    labelStyle: TextStyle(color: Colors.white)),
                               ),
                             ),
                             Padding(
@@ -147,71 +148,91 @@ class _LoginPageState extends State<LoginPage> {
                                           : UniconsLine.eye_slash),
                                     ),
                                     prefixIcon: Icon(UniconsLine.lock),
-                                    fillColor: Colors.white.withOpacity(0.35),
+                                    fillColor: Colors.white.withOpacity(0.40),
                                     filled: true,
                                     hintText: 'Password',
-                                    hintStyle: TextStyle(
-                                        color: Colors.white.withOpacity(0.75))),
+                                    hintStyle: TextStyle(color: Colors.white)),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: RichText(
-                                text: TextSpan(
-                                    text: 'Forgot password?',
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {}),
-                              ),
-                            ),
+                            TextButton(
+                                onPressed: () {
+                                  Get.to(ResetPassword());
+                                },
+                                child: Text('Forgot Password?')),
                             Padding(
                               padding: const EdgeInsets.only(top: 20),
-                              child: TextButton(
-                                style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all(
-                                        Colors.blue.withOpacity(0.75))),
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    _login();
-                                  }
-                                },
-                                child: Text('Login'.toUpperCase(),
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 35.0),
-                              child: RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                    text: 'Don\'t have account? ',
-                                    children: [
-                                      TextSpan(
-                                        text: 'Create new account',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.blue,
-                                            decoration:
-                                                TextDecoration.underline),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            showModalBottomSheet(
-                                                isScrollControlled: true,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.vertical(
-                                                    top: Radius.circular(20),
+                              child: _isLoading
+                                  ? Center(
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  : Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom: size.height * 0.01,
+                                        ),
+                                        child: SizedBox(
+                                          height: size.height * 0.07,
+                                          width: size.width,
+                                          child: InkWell(
+                                            onTap: () async {
+                                              if (_formKey.currentState!
+                                                  .validate()) {
+                                                _login();
+                                              }
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                color: const Color(0xff3b22a1),
+                                              ),
+                                              child: Align(
+                                                child: Text(
+                                                  'Login',
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.lato(
+                                                    fontSize:
+                                                        size.height * 0.025,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
                                                   ),
                                                 ),
-                                                context: context,
-                                                builder: (context) =>
-                                                    bottomSheet());
-                                          },
-                                      )
-                                    ]),
-                              ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                             ),
+                            Padding(
+                              padding: EdgeInsets.only(top: 15),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Don\'t have an account?',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                top: Radius.circular(20),
+                                              ),
+                                            ),
+                                            context: context,
+                                            builder: (context) =>
+                                                bottomSheet());
+                                      },
+                                      child: Text('Create a new one'))
+                                ],
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -237,9 +258,9 @@ class _LoginPageState extends State<LoginPage> {
     if (res.statusCode == 201) {
       SharedPreferences localStorage = await SharedPreferences.getInstance();
       localStorage.setString('token', jsonEncode(body['token']));
-      localStorage.setString('user', json.encode(body['user']));
+      localStorage.setString('user', json.encode(User.fromJson(body['user'])));
       Network().getToken();
-      Get.to(HomePage());
+      Get.off(HomePage());
     } else {
       _showMsg(body['message']);
     }
@@ -250,44 +271,54 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// Future<Login> loginUser(
-//   String email,
-//   String password,
-// ) async {
-//   const String apiUrl =
-//       "https://ukk-smk-2022.rahmatwahyumaakbar.com/api/token/";
-//   final response = await http.post(
-//     Uri.https('ukk-smk-2022.rahmatwahyumaakbar.com', '/api/token'),
-//     headers: {"Accept": "application/json", "Content-Type": "application/json"},
-//     body: jsonEncode({
-//       'email': email,
-//       'password': password,
-//     }),
-//   );
+String greetingMessage() {
+  var timeNow = DateTime.now().hour;
 
-//   if (response.statusCode == 201) {
-//     Map<String, dynamic> token = jsonDecode(response.body);
-//     apiBearerToken = token['token'];
-//     return token;
-//   } else {
-//     throw Exception('Failed to Login');
-//   }
-// }
-
-void postLogin(String email, String password) async {
-  final response = await http.post(
-    Uri.parse(baseUrl + 'token'),
-    headers: {"Accept": "application/json", "Content-Type": "application/json"},
-    body: jsonEncode({
-      'email': email,
-      'password': password,
-    }),
-  );
-  if (response.statusCode == 201) {
-    Map<String, dynamic> token = jsonDecode(response.body);
-    var getLogin = GetLogin.fromJson(token);
-    apiBearerToken = "Bearer " + getLogin.token;
+  if (timeNow <= 12) {
+    return 'Good Morning.';
+  } else if ((timeNow > 12) && (timeNow <= 16)) {
+    return 'Good Afternoon.';
+  } else if ((timeNow > 16) && (timeNow < 20)) {
+    return 'Good Evening.';
   } else {
-    throw Exception('Failed to Login');
+    return 'Good Night.';
   }
+}
+
+Align buildSelectButtonFromBrands(
+  Size size,
+  BuildContext context,
+) {
+  return Align(
+    alignment: Alignment.bottomCenter,
+    child: Padding(
+      padding: EdgeInsets.only(
+        bottom: size.height * 0.01,
+      ),
+      child: SizedBox(
+        height: size.height * 0.07,
+        width: size.width,
+        child: InkWell(
+          onTap: () {},
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: const Color(0xff3b22a1),
+            ),
+            child: Align(
+              child: Text(
+                'Login',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lato(
+                  fontSize: size.height * 0.025,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

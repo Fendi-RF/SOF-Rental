@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,10 +14,12 @@ class AppBarMain extends StatelessWidget {
     Key? key,
     required this.themeData,
     required this.size,
+    required this.onPressed,
   }) : super(key: key);
 
   final ThemeData themeData;
   final Size size;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +69,15 @@ class AppBarMain extends StatelessWidget {
                   Radius.circular(10),
                 ),
               ),
-              child: Icon(
-                UniconsLine.exit,
-                color: themeData.secondaryHeaderColor,
-                size: size.height * 0.025,
+              child: IconButton(
+                icon: Icon(
+                  UniconsLine.exit,
+                  color: themeData.secondaryHeaderColor,
+                  size: size.height * 0.025,
+                ),
+                onPressed: () {
+                  onPressed();
+                },
               ),
             ),
           ),

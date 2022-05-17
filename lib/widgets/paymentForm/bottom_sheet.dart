@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/data/models/brands.dart';
 import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/models/invoice.dart';
 import 'package:car_rental_app_ui/data/models/vehicle_spec.dart';
 import 'package:car_rental_app_ui/pages/profile_page.dart';
 import 'package:date_time_picker/date_time_picker.dart';
@@ -17,28 +18,20 @@ import 'package:image_picker/image_picker.dart';
 import 'package:unicons/unicons.dart';
 import 'package:http/http.dart' as http;
 
-class TransactionForm extends StatefulWidget {
-  const TransactionForm({Key? key, required this.cars}) : super(key: key);
+class PaymentFormBottom extends StatefulWidget {
+  const PaymentFormBottom({Key? key, required this.invoice}) : super(key: key);
 
-  final Cars cars;
+  final Invoice invoice;
   @override
-  State<TransactionForm> createState() => _TransactionFormState();
+  State<PaymentFormBottom> createState() => _PaymentFormBottomState();
 }
 
-class _TransactionFormState extends State<TransactionForm> {
+class _PaymentFormBottomState extends State<PaymentFormBottom> {
   File? image;
   DateTime? dtStart = DateTime.now();
   DateTime? dtEnd = DateTime.now().add(Duration(days: 1));
   int? diff;
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    setState(() {
-      diff = daysBetween(dtStart ?? DateTime.now(), dtEnd ?? DateTime.now());
-    });
-  }
 
   _showMsg(msg) {
     final snackBar = SnackBar(
@@ -71,61 +64,53 @@ class _TransactionFormState extends State<TransactionForm> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    String dropdownValue = 'BNI';
+    ThemeData themeData = Theme.of(context);
+
+    String? payerName;
+    String? amount;
 
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            'Start Rent Date',
-          ),
-          DateTimePicker(
-              type: DateTimePickerType.date,
-              dateMask: 'd MMM, yyyy',
-              initialValue: DateTime.now().toString(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-              icon: Icon(Icons.event),
-              dateLabelText: 'Date',
-              onChanged: (val) => setState(() {
-                    dtStart = DateTime.tryParse(val);
-                    diff = daysBetween(dtStart!, dtEnd!);
-                  }),
-              validator: (val) {
-                print(val);
-                return null;
-              },
-              onSaved: (val) => setState(() {
-                    dtStart = DateTime.tryParse(val!);
-                    diff = daysBetween(dtStart!, dtEnd!);
-                  })),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Text(
-              'End Rent Date',
-            ),
-          ),
-          DateTimePicker(
-            type: DateTimePickerType.date,
-            dateMask: 'd MMM, yyyy',
-            initialValue: DateTime.now().toString(),
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-            icon: Icon(Icons.event),
-            dateLabelText: 'Date',
-            onChanged: (val) => setState(() {
-              dtEnd = DateTime.tryParse(val);
-              diff = daysBetween(dtStart!, dtEnd!);
-            }),
-            validator: (val) {
-              print(val);
-              return null;
-            },
-            onSaved: (val) {
+          TextFormField(
+            decoration: InputDecoration(hintText: 'Payer\'s Name'),
+            onChanged: (v) {
               setState(() {
-                dtEnd = DateTime.tryParse(val!);
-                diff = daysBetween(dtStart!, dtEnd!);
+                payerName = v;
+              });
+            },
+          ),
+          DropdownButton<String>(
+            value: dropdownValue,
+            icon: const Icon(Icons.arrow_drop_down),
+            elevation: 16,
+            style: const TextStyle(color: Colors.deepPurple),
+            underline: Container(
+              height: 2,
+              color: themeData.secondaryHeaderColor,
+            ),
+            onChanged: (String? newValue) {
+              setState(() {
+                dropdownValue = newValue!;
+              });
+            },
+            items: <String>['BNI', 'BCA', 'BRI', 'Mandiri']
+                .map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+          ),
+          TextFormField(
+            decoration: InputDecoration(hintText: 'Amount to Pay'),
+            keyboardType: TextInputType.number,
+            onChanged: (v) {
+              setState(() {
+                amount = v;
               });
             },
           ),
@@ -148,7 +133,9 @@ class _TransactionFormState extends State<TransactionForm> {
                   width: size.width,
                   child: InkWell(
                     onTap: () {
-                      _rent();
+                      // _rent();
+                      _pay(themeData, widget.invoice, payerName, dropdownValue,
+                          amount);
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -174,47 +161,130 @@ class _TransactionFormState extends State<TransactionForm> {
     );
   }
 
-  void _rent() async {
+  // void _rent() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+
+  //   var streamedRes = await Network().postMultipartRental(
+  //       'rental/' + widget.cars.vehicleSlug,
+  //       dtStart.toString(),
+  //       dtEnd.toString(),
+  //       (diff! * int.parse(widget.cars.rentPrice)).toString(),
+  //       image!);
+  //   var res = await http.Response.fromStream(streamedRes);
+  //   var body = jsonDecode(res.body);
+  //   if (res.statusCode == 200) {
+  //     print('Success');
+  //     showDialog(
+  //         context: context,
+  //         builder: (_) => AlertDialog(
+  //               title: Text(body['status']),
+  //               content: Text("Transaction Code: \n ${body['invoice_code']}"),
+  //               actions: [
+  //                 TextButton(
+  //                     onPressed: () {
+  //                       Get.to(ProfilePage());
+  //                     },
+  //                     child: Text('Pay Now')),
+  //                 TextButton(
+  //                     onPressed: () {},
+  //                     child: Text(
+  //                       'Later',
+  //                       style: TextStyle(color: Colors.grey),
+  //                     ))
+  //               ],
+  //             ));
+  //   } else {
+  //     _showMsg(body['message']);
+  //   }
+
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
+  void _pay(ThemeData themeData, Invoice invoice, String? payerName,
+      String? dropValue, String? amount) async {
     setState(() {
       _isLoading = true;
     });
 
-    var streamedRes = await Network().postMultipartRental(
-        'rental/' + widget.cars.vehicleSlug,
-        dtStart.toString(),
-        dtEnd.toString(),
-        (diff! * int.parse(widget.cars.rentPrice)).toString(),
+    var streamedRes = await Network().postMultipartPay(
+        'invoice/' + invoice.transactionCode,
+        payerName,
+        dropValue,
+        amount,
         image!);
     var res = await http.Response.fromStream(streamedRes);
     var body = jsonDecode(res.body);
     if (res.statusCode == 200) {
-      print('Success');
+      // _showMsg(body['message']);
       showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-                title: Text(body['message']),
-                content: Text("Transaction Code: \n ${body['invoice_code']}"),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Get.to(ProfilePage());
-                      },
-                      child: Text('Pay Now')),
-                  TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Later',
-                        style: TextStyle(color: Colors.grey),
-                      ))
-                ],
-              ));
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(body['status']),
+          content: Column(children: [
+            Text(body['message']),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    buildUnderColor(themeData, 'Required Amount'),
+                    Text(
+                      body['required'],
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    buildUnderColor(themeData, 'Amount Paid'),
+                    Text(
+                      body['your_money'],
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                  ],
+                )
+              ],
+            ),
+            buildUnderColor(themeData, 'Cashback'),
+            Text(
+              body['cashback'],
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+          ]),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Get.to(ProfilePage());
+                },
+                child: Text('Ok')),
+          ],
+        ),
+      );
     } else {
-      _showMsg(body['message']);
+      print(body['message']);
+      // throw "wtf";
     }
 
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Container buildUnderColor(ThemeData themeData, String text) {
+    return Container(
+      decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(color: themeData.secondaryHeaderColor))),
+      child: Text(
+        text,
+        style: TextStyle(color: themeData.primaryColor),
+      ),
+    );
   }
 }
 
@@ -266,6 +336,7 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    ThemeData themeData = Theme.of(context);
 
     return Container(
       padding: EdgeInsets.all(16),
@@ -333,7 +404,7 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
                   width: size.width,
                   child: InkWell(
                     onTap: () {
-                      _rent();
+                      // _rent();
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -357,49 +428,5 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
         ],
       ),
     );
-  }
-
-  void _rent() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    var streamedRes = await Network().postMultipartRental(
-        'rental/' + widget.cars.vehicleSlug,
-        dtStart.toString(),
-        dtEnd.toString(),
-        (diff! * int.parse(widget.cars.rentPrice)).toString(),
-        image!);
-    var res = await http.Response.fromStream(streamedRes);
-    var body = jsonDecode(res.body);
-    if (res.statusCode == 200) {
-      // _showMsg(body['message']);
-      showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-                title: Text(body['status']),
-                content: Text(body['message']),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Get.to(ProfilePage());
-                      },
-                      child: Text('Pay Now')),
-                  TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Later',
-                        style: TextStyle(color: Colors.grey),
-                      ))
-                ],
-              ));
-    } else {
-      // print(body['message']);
-      throw "wtf";
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 }

@@ -1,15 +1,17 @@
 import 'dart:math';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/API/api_url.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/data/cars.dart';
 import 'package:car_rental_app_ui/pages/details_page.dart';
+import 'package:car_rental_app_ui/widgets/carDetailsPage/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:unicons/unicons.dart';
 
-Padding buildCarWithJson(Size size, ThemeData themeData, Cars cars) {
+Padding buildCarWithJson(
+    Size size, ThemeData themeData, Cars cars, BuildContext context) {
   return Padding(
     padding: EdgeInsets.only(
       right: size.width * 0.03,
@@ -111,9 +113,18 @@ Padding buildCarWithJson(Size size, ThemeData themeData, Cars cars) {
                               ),
                             ),
                           ),
-                          child: const Icon(
-                            UniconsLine.credit_card,
-                            color: Colors.white,
+                          child: IconButton(
+                            icon: Icon(
+                              UniconsLine.credit_card,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => TransactionForm(
+                                        cars: cars,
+                                      ));
+                            },
                           ),
                         ),
                       ),

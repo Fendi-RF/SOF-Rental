@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:car_rental_app_ui/data/api_url.dart';
-import 'package:car_rental_app_ui/data/cars%20copy.dart';
+import 'package:car_rental_app_ui/data/API/requests.dart';
+import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/data/cars.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
 import 'package:car_rental_app_ui/widgets/homePage/car.dart';
@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-Widget buildMostRented(Size size, ThemeData themeData) {
+Widget buildMostRented(Size size, ThemeData themeData, Future cars) {
   return Column(
     children: [
       buildCategory('Most Rented', size, themeData, () {
@@ -27,7 +27,7 @@ Widget buildMostRented(Size size, ThemeData themeData) {
           height: size.width * 0.55,
           width: size.width,
           child: FutureBuilder(
-            future: getCars(),
+            future: cars,
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               if (snapshot.hasData) {
                 List<Cars> cars = snapshot.data;
@@ -37,7 +37,7 @@ Widget buildMostRented(Size size, ThemeData themeData) {
                     scrollDirection: Axis.horizontal,
                     children: cars
                         .map((Cars car) =>
-                            buildCarWithJson(size, themeData, car))
+                            buildCarWithJson(size, themeData, car, context))
                         .toList());
               } else {
                 return Center(child: CircularProgressIndicator());
@@ -50,22 +50,6 @@ Widget buildMostRented(Size size, ThemeData themeData) {
   );
 }
 
-Future<List<Cars>> getCars() async {
-  final response = await Network().getData('vehicles');
-
-  if (response.statusCode == 200) {
-    return parseCars(response.body);
-  } else {
-    throw "Can not connect to the API";
-  }
-}
-
-List<Cars> parseCars(responseBody) {
-  List<dynamic> body = jsonDecode(responseBody);
-  List<Cars> cars = body.map((dynamic e) => Cars.fromJson(e)).toList();
-  return cars;
-}
-
 class CarsFromJsonWidget extends StatelessWidget {
   const CarsFromJsonWidget({Key? key}) : super(key: key);
 
@@ -74,7 +58,7 @@ class CarsFromJsonWidget extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
 
     return FutureBuilder(
-      future: getCars(),
+      future: Request().getCars(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasData) {
           List<Cars> cars = snapshot.data;

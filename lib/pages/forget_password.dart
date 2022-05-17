@@ -2,23 +2,20 @@ import 'dart:convert';
 
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/pages/login_page.dart';
+import 'package:car_rental_app_ui/widgets/registerPage/registVerif.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:unicons/unicons.dart';
 
-class RegisterVerif extends StatefulWidget {
-  const RegisterVerif({Key? key, required this.email}) : super(key: key);
+class ResetPassword extends StatefulWidget {
+  const ResetPassword({Key? key}) : super(key: key);
 
   @override
-  State<RegisterVerif> createState() => _RegisterVerifState();
-
-  final String email;
+  State<ResetPassword> createState() => _ResetPasswordState();
 }
 
-class _RegisterVerifState extends State<RegisterVerif> {
+class _ResetPasswordState extends State<ResetPassword> {
   bool _isLoading = false;
   final TextEditingController controller = TextEditingController();
   String otp = '';
@@ -39,62 +36,46 @@ class _RegisterVerifState extends State<RegisterVerif> {
     return Scaffold(
       backgroundColor: themeData.backgroundColor,
       appBar: AppBar(
+        backgroundColor: themeData.backgroundColor,
+        elevation: 0,
         leading: IconButton(
-          onPressed: () {
-            Get.back();
-          },
           icon: Icon(
             Icons.arrow_back,
             color: themeData.secondaryHeaderColor,
           ),
+          onPressed: () {
+            Get.back();
+          },
         ),
-        backgroundColor: themeData.backgroundColor,
-        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Text(
-              'OTP Verification',
+              'Reset Password',
               style: GoogleFonts.bebasNeue(
                   fontSize: 35, color: themeData.primaryColor),
             ),
-            Text(
-              'We already sent otp code to your email',
-              style: TextStyle(color: themeData.primaryColor),
-            ),
+            Text('Enter your email to receive a token for reseting password'),
             SizedBox(
-              height: size.height * 0.08,
+              height: size.height * 0.03,
             ),
             Form(
               key: _formKey,
-              child: Column(
-                children: [
-                  PinCodeTextField(
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter the OTP Code';
-                      } else if (value.length < 6) {
-                        return 'Please enter a valid OTP Code';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                    controller: controller,
-                    pinTheme: PinTheme(activeColor: Colors.green),
-                    textInputAction: TextInputAction.go,
-                    appContext: context,
-                    length: 6,
-                    onChanged: (onChanged) {
-                      setState(() {
-                        otp = onChanged;
-                      });
-                      print(otp);
-                    },
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
-                ],
+              child: TextFormField(
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return 'Please insert the email';
+                  } else if (!EmailValidator.validate(v)) {
+                    return 'Email is not appropriate';
+                  }
+                  return null;
+                },
+                controller: controller,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(hintText: 'email@example.com'),
+                keyboardType: TextInputType.emailAddress,
               ),
             ),
             Spacer(),
@@ -114,7 +95,8 @@ class _RegisterVerifState extends State<RegisterVerif> {
                         child: InkWell(
                           onTap: () {
                             if (_formKey.currentState!.validate()) {
-                              _verifyAcc();
+                              // _verifyAcc;
+                              _reset();
                             }
                           },
                           child: Container(
@@ -124,7 +106,7 @@ class _RegisterVerifState extends State<RegisterVerif> {
                             ),
                             child: Align(
                               child: Text(
-                                'Verify',
+                                'Submit',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
                                   fontSize: size.height * 0.025,
@@ -144,15 +126,14 @@ class _RegisterVerifState extends State<RegisterVerif> {
     );
   }
 
-  void _verifyAcc() async {
+  void _reset() async {
     setState(() {
       _isLoading = true;
     });
+    var data = {'email': controller.text};
 
-    var data = {"email": widget.email, "token": otp};
-
-    var res = await Network().auth(data, 'verify');
-    var body = json.decode(res.body);
+    var res = await Network().auth(data, 'reset');
+    var body = jsonDecode(res.body);
     if (res.statusCode == 200) {
       showDialog(
         context: context,
@@ -162,7 +143,9 @@ class _RegisterVerifState extends State<RegisterVerif> {
           actions: [
             TextButton(
                 onPressed: () {
-                  Get.off(LoginPage());
+                  Get.to(RegisterVerif(
+                    email: controller.text,
+                  ));
                 },
                 child: Text('Ok'))
           ],
