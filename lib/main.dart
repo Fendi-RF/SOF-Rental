@@ -5,6 +5,7 @@ import 'package:car_rental_app_ui/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/rendering.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,18 +24,20 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
+    // debugPaintSizeEnabled = true;
     return GetMaterialApp(
       defaultTransition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
       debugShowCheckedModeBanner: false,
       title: 'SOF Rental',
-      home: LoginPage(),
+      home: CheckAuth(),
       theme: lightModeTheme,
       darkTheme: darkModeTheme,
     );
   }
 }
 
+// TODO : ,  Bug ListTile,  BottomoSheet Round corner upper only
 class CheckAuth extends StatefulWidget {
   @override
   _CheckAuthState createState() => _CheckAuthState();

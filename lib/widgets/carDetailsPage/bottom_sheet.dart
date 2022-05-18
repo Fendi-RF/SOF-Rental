@@ -243,7 +243,12 @@ class _TransactionFormState extends State<TransactionForm> {
           context: context,
           builder: (_) => AlertDialog(
                 title: Text(body['status']),
-                content: Text(body['message']),
+                content: Column(
+                  children: [
+                    Lottie.asset('assets/lottie/cross.json'),
+                    Text(body['message']),
+                  ],
+                ),
               ));
     }
 
@@ -477,8 +482,13 @@ class _TransactionFormBrandsState extends State<TransactionFormBrands> {
       showDialog(
           context: context,
           builder: (_) => AlertDialog(
-                title: body['status'],
-                content: body['message'],
+                title: Text(body['status']),
+                content: Column(
+                  children: [
+                    Lottie.asset('assets/lottie/cross.json'),
+                    Text(body['message']),
+                  ],
+                ),
               ));
     }
 

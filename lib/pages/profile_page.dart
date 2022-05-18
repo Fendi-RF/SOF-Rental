@@ -157,9 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   if (snapshot.hasData) {
                     List<Invoice> inv = snapshot.data;
 
-                    return ListView(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                    return Column(
                       children: inv.map((e) => buildInvoiceTile(e)).toList(),
                     );
                   } else {
@@ -174,9 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   if (snapshot.hasData) {
                     List<Invoice> inv = snapshot.data;
 
-                    return ListView(
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
+                    return Column(
                       children: inv.map((e) => buildHistoryTile(e)).toList(),
                     );
                   } else {
@@ -241,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return InkWell(
       onTap: () {
         Get.to(PaymentForm(
-          inv: inv,
+          invoice: inv,
         ));
       },
       child: ListTile(
@@ -261,8 +257,8 @@ class _ProfilePageState extends State<ProfilePage> {
   InkWell buildHistoryTile(Invoice inv) {
     return InkWell(
       onTap: () {
-        Get.to(HistoryPage(
-          inv: inv,
+        Get.to(HistoryFromAlter(
+          invoice: inv,
         ));
       },
       child: ListTile(

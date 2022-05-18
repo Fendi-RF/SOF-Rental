@@ -314,8 +314,13 @@ class _PaymentFormBottomState extends State<PaymentFormBottom> {
       showDialog(
           context: context,
           builder: (_) => AlertDialog(
-                title: body['status'],
-                content: body['message'],
+                title: Text(body['status']),
+                content: Column(
+                  children: [
+                    Lottie.asset('assets/lottie/cross.json'),
+                    Text(body['message']),
+                  ],
+                ),
               ));
       // throw "wtf";
     }

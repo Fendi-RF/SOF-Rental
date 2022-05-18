@@ -133,7 +133,8 @@ Padding buildCarWithJson(
                             onPressed: () {
                               showModalBottomSheet(
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15)),
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(20))),
                                   context: context,
                                   builder: (context) => TransactionForm(
                                         cars: cars,

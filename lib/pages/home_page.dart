@@ -111,154 +111,153 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: buildBottomNavBar(0, size, themeData),
       backgroundColor: themeData.backgroundColor,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.delayed(Duration(seconds: 1));
-            setState(() {
-              _loadApi();
-            });
-          },
-          child: ListView(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(
-                  top: size.height * 0.02,
-                  left: size.width * 0.05,
-                  right: size.width * 0.05,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(15),
-                    ),
-                    color: themeData.cardColor, //section bg color
+        // child: RefreshIndicator(
+        //   onRefresh: () async {
+        //     await Future.delayed(Duration(seconds: 1));
+        //     setState(() {
+        //       _loadApi();
+        //     });
+        //   },
+        child: ListView(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                top: size.height * 0.02,
+                left: size.width * 0.05,
+                right: size.width * 0.05,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(15),
                   ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: size.height * 0.04,
-                        ),
-                        child: Align(
-                          child: Text(
-                            'Fast & Easy Way To Rent A Car',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              color: themeData.secondaryHeaderColor,
-                              fontSize: size.width * 0.06,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  color: themeData.cardColor, //section bg color
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: size.height * 0.04,
+                      ),
+                      child: Align(
+                        child: Text(
+                          'Fast & Easy Way To Rent A Car',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: themeData.secondaryHeaderColor,
+                            fontSize: size.width * 0.06,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: size.height * 0.01,
-                        ),
-                        child: Align(
-                          child: Text(
-                            'Source of fortune for everyone',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              color: themeData.secondaryHeaderColor,
-                              fontSize: size.width * 0.035,
-                            ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: size.height * 0.01,
+                      ),
+                      child: Align(
+                        child: Text(
+                          'Source of fortune for everyone',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: themeData.secondaryHeaderColor,
+                            fontSize: size.width * 0.035,
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: size.height * 0.03,
-                          bottom: size.height * 0.025,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: size.width * 0.65,
-                              height: size.height * 0.06,
-                              child: TextField(
-                                onChanged: (val) {
-                                  setState(() {
-                                    if (val != '') {
-                                      _isSearching = true;
-                                    } else {
-                                      _isSearching = false;
-                                    }
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: size.height * 0.03,
+                        bottom: size.height * 0.025,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: size.width * 0.65,
+                            height: size.height * 0.06,
+                            child: TextField(
+                              onChanged: (val) {
+                                setState(() {
+                                  if (val != '') {
+                                    _isSearching = true;
+                                  } else {
+                                    _isSearching = false;
+                                  }
 
-                                    carsSearch = cars
-                                        .where((element) => (element.vehicleName
-                                            .toLowerCase()
-                                            .contains(val.toLowerCase())))
-                                        .toList();
-                                  });
-                                },
-                                controller: controller,
-                                // onChanged: (value) => final suh,
-                                //searchbar
-                                style: GoogleFonts.poppins(
+                                  carsSearch = cars
+                                      .where((element) => (element.vehicleName
+                                          .toLowerCase()
+                                          .contains(val.toLowerCase())))
+                                      .toList();
+                                });
+                              },
+                              controller: controller,
+                              // onChanged: (value) => final suh,
+                              //searchbar
+                              style: GoogleFonts.poppins(
+                                color: themeData.primaryColor,
+                              ),
+                              textInputAction: TextInputAction.next,
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.only(
+                                  top: size.height * 0.01,
+                                  left: size.width * 0.04,
+                                  right: size.width * 0.04,
+                                ),
+                                enabledBorder: textFieldBorder(),
+                                focusedBorder: textFieldBorder(),
+                                border: textFieldBorder(),
+                                hintStyle: GoogleFonts.poppins(
                                   color: themeData.primaryColor,
                                 ),
-                                textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.only(
-                                    top: size.height * 0.01,
-                                    left: size.width * 0.04,
-                                    right: size.width * 0.04,
-                                  ),
-                                  enabledBorder: textFieldBorder(),
-                                  focusedBorder: textFieldBorder(),
-                                  border: textFieldBorder(),
-                                  hintStyle: GoogleFonts.poppins(
-                                    color: themeData.primaryColor,
-                                  ),
-                                  hintText: 'Search a car',
-                                ),
+                                hintText: 'Search a car',
                               ),
                             ),
-                            // _isSearching
-                            //     ? Padding(
-                            //         padding: EdgeInsets.only(
-                            //           left: size.width * 0.025,
-                            //         ),
-                            //         child: Container(
-                            //           height: size.height * 0.06,
-                            //           width: size.width * 0.14,
-                            //           decoration: const BoxDecoration(
-                            //             borderRadius: BorderRadius.all(
-                            //               Radius.circular(10),
-                            //             ),
-                            //             color: Color(
-                            //                 0xff3b22a1), //filters bg color
-                            //           ),
-                            //           child: IconButton(
-                            //             icon: Icon(
-                            //               UniconsLine.filter,
-                            //               color: Colors.white,
-                            //               size: size.height * 0.032,
-                            //             ),
-                            //             onPressed: () {
-                            //               showModalBottomSheet(
-                            //                   isScrollControlled: true,
-                            //                   context: context,
-                            //                   builder: (context) => SortBy());
-                            //             },
-                            //           ),
-                            //         ),
-                            //       )
-                            //     : Container()
-                          ],
-                        ),
+                          ),
+                          // _isSearching
+                          //     ? Padding(
+                          //         padding: EdgeInsets.only(
+                          //           left: size.width * 0.025,
+                          //         ),
+                          //         child: Container(
+                          //           height: size.height * 0.06,
+                          //           width: size.width * 0.14,
+                          //           decoration: const BoxDecoration(
+                          //             borderRadius: BorderRadius.all(
+                          //               Radius.circular(10),
+                          //             ),
+                          //             color: Color(
+                          //                 0xff3b22a1), //filters bg color
+                          //           ),
+                          //           child: IconButton(
+                          //             icon: Icon(
+                          //               UniconsLine.filter,
+                          //               color: Colors.white,
+                          //               size: size.height * 0.032,
+                          //             ),
+                          //             onPressed: () {
+                          //               showModalBottomSheet(
+                          //                   isScrollControlled: true,
+                          //                   context: context,
+                          //                   builder: (context) => SortBy());
+                          //             },
+                          //           ),
+                          //         ),
+                          //       )
+                          //     : Container()
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              _isSearching
-                  ? CarsSearchFromJsonWidget(cars: carsSearch)
-                  : Recommendation(size, themeData),
-            ],
-          ),
+            ),
+            _isSearching
+                ? CarsSearchFromJsonWidget(cars: carsSearch)
+                : Recommendation(size, themeData),
+          ],
         ),
       ),
     );

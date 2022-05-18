@@ -256,7 +256,8 @@ Align buildSelectButton(Size size, BuildContext context, Cars cars) {
           onTap: () {
             showModalBottomSheet(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20))),
                 context: context,
                 builder: (context) => TransactionForm(
                       cars: cars,
@@ -300,7 +301,8 @@ Align buildSelectButtonFromBrands(
           onTap: () {
             showModalBottomSheet(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20))),
                 context: context,
                 builder: (context) => TransactionFormBrands(
                       cars: cars,

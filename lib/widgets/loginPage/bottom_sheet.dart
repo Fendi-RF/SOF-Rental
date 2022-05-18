@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/http/interface/request_base.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unicons/unicons.dart';
 import 'package:http/http.dart' as http;
@@ -248,10 +249,10 @@ class _bottomSheetState extends State<bottomSheet> {
                         // final String pwString = pw.text;
                         // final String cpwString = cpw.text;
 
-                        // _registerUser();
-                        Get.to(RegisterVerif(
-                          email: email.text,
-                        ));
+                        _registerUser();
+                        // Get.to(RegisterVerif(
+                        //   email: email.text,
+                        // ));
                       }
                     },
                   ),
@@ -293,8 +294,19 @@ class _bottomSheetState extends State<bottomSheet> {
         email: email.text,
       ));
     } else {
-      _showMsg(body['message']);
+      // _showMsg(body['message']);
       // throw "gagal register";
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: Text(body['status']),
+                content: Column(
+                  children: [
+                    Lottie.asset('assets/lottie/cross.json'),
+                    Text(body['message'])
+                  ],
+                ),
+              ));
     }
 
     setState(() {

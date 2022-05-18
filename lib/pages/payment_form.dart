@@ -1,16 +1,18 @@
 import 'package:car_rental_app_ui/data/models/invoice.dart';
+import 'package:car_rental_app_ui/pages/history_page.dart';
 import 'package:car_rental_app_ui/widgets/paymentForm/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class PaymentForm extends StatefulWidget {
-  const PaymentForm({Key? key, required this.inv}) : super(key: key);
+  const PaymentForm({Key? key, required this.invoice}) : super(key: key);
 
   @override
   State<PaymentForm> createState() => _PaymentFormState();
 
-  final Invoice inv;
+  final Invoice invoice;
 }
 
 class _PaymentFormState extends State<PaymentForm> {
@@ -41,100 +43,54 @@ class _PaymentFormState extends State<PaymentForm> {
             width: size.width * 0.95,
             child: Column(
               children: [
-                Text(
-                  'Payment Form',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                      color: themeData.cardColor,
+                    ),
+                    width: size.width,
+                    height: size.height * 0.05,
+                    child: Center(
+                      child: Text(
+                        'Transaction',
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
+                    )),
                 SizedBox(
                   height: size.height * 0.05,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildUnderColor(themeData, 'Transaction Code'),
-                        Text(
-                          widget.inv.transactionCode!,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        )
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        buildUnderColor(themeData, 'Amount'),
-                        Text(
-                          'Rp${widget.inv.rentPrice}',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        )
-                      ],
-                    )
-                  ],
+                HistoryRow('Transaction code',
+                    widget.invoice.transactionCode.toString()),
+                SizedBox(
+                  height: size.height * 0.05,
                 ),
-                SizedBox(height: size.height * 0.05),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildUnderColor(themeData, 'Car Name'),
-                        Text(
-                          widget.inv.vehicleSpec!.vehicleName,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        )
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        buildUnderColor(themeData, 'Number Plate'),
-                        Text(
-                          widget.inv.vehicleSpec!.numberPlate,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        )
-                      ],
-                    )
-                  ],
+                HistoryRow(
+                    'Amount', 'Rp${widget.invoice.rentPrice.toString()}'),
+                SizedBox(
+                  height: size.height * 0.05,
                 ),
-                SizedBox(height: size.height * 0.05),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildUnderColor(themeData, 'Start Rent Date'),
-                        Text(
-                          widget.inv.startRentDate.toString(),
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        )
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        buildUnderColor(themeData, 'End Rent Date'),
-                        Text(
-                          widget.inv.endRentDate.toString(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        )
-                      ],
-                    )
-                  ],
+                HistoryRow('Car name',
+                    widget.invoice.vehicleSpec!.vehicleName.toString()),
+                SizedBox(
+                  height: size.height * 0.05,
                 ),
+                HistoryRow(
+                    'Number plater', widget.invoice.vehicleSpec!.numberPlate),
+                SizedBox(
+                  height: size.height * 0.05,
+                ),
+                HistoryRow(
+                    'Start rent date',
+                    DateFormat('yyyy-MM-dd')
+                        .format(widget.invoice.startRentDate as DateTime)),
+                SizedBox(
+                  height: size.height * 0.05,
+                ),
+                HistoryRow(
+                    'End rent date',
+                    DateFormat('yyyy-MM-dd')
+                        .format(widget.invoice.endRentDate as DateTime)),
                 Spacer(),
                 Align(
                   alignment: Alignment.bottomCenter,
@@ -149,10 +105,11 @@ class _PaymentFormState extends State<PaymentForm> {
                         onTap: () {
                           showModalBottomSheet(
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15)),
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20))),
                               context: context,
                               builder: (context) =>
-                                  PaymentFormBottom(invoice: widget.inv));
+                                  PaymentFormBottom(invoice: widget.invoice));
                         },
                         child: Container(
                           decoration: BoxDecoration(
