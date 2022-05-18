@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
 import 'package:car_rental_app_ui/data/cars.dart';
@@ -45,13 +46,24 @@ Padding buildCarWithJson(
                       top: size.height * 0.01,
                     ),
                     child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Image.network(
-                          baseAssetUrl + cars.vehicleImage,
-                          height: size.width * 0.25,
-                          width: size.width * 0.5,
-                          fit: BoxFit.contain,
-                        )),
+                      alignment: Alignment.topCenter,
+                      // child: Image.network(
+                      //   baseAssetUrl + cars.vehicleImage,
+                      //   height: size.width * 0.25,
+                      //   width: size.width * 0.5,
+                      //   fit: BoxFit.contain,
+                      // ),
+                      child: CachedNetworkImage(
+                        imageUrl: baseAssetUrl + cars.vehicleImage,
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                        height: size.width * 0.25,
+                        width: size.width * 0.5,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.only(
@@ -120,6 +132,8 @@ Padding buildCarWithJson(
                             ),
                             onPressed: () {
                               showModalBottomSheet(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
                                   context: context,
                                   builder: (context) => TransactionForm(
                                         cars: cars,

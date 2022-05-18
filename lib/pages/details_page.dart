@@ -1,6 +1,7 @@
 // import 'dart:js';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/data/models/brands.dart';
 import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
@@ -8,6 +9,7 @@ import 'package:car_rental_app_ui/data/cars.dart';
 import 'package:car_rental_app_ui/data/models/vehicle_spec.dart';
 import 'package:car_rental_app_ui/widgets/carDetailsPage/bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:unicons/unicons.dart';
@@ -50,14 +52,23 @@ class _DetailsPageState extends State<DetailsPage> {
               child: Stack(
                 children: [
                   ListView(
-                    physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      Image.network(
-                        baseAssetUrl + widget.cars.vehicleImage,
+                      CachedNetworkImage(
+                        imageUrl: baseAssetUrl + widget.cars.vehicleImage,
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
                         height: size.width * 0.5,
                         width: size.width * 0.8,
                         fit: BoxFit.contain,
                       ),
+                      // Image.network(
+                      //   baseAssetUrl + widget.cars.vehicleImage,
+                      //   height: size.width * 0.5,
+                      //   width: size.width * 0.8,
+                      //   fit: BoxFit.contain,
+                      // ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,9 +162,8 @@ class _DetailsPageState extends State<DetailsPage> {
                         ),
                       ),
                       Center(
-                        child: Text(
-                          widget.cars.vehicleDescription,
-                          textAlign: TextAlign.center,
+                        child: Html(
+                          data: widget.cars.vehicleDescription,
                         ),
                       ),
                     ],
@@ -245,6 +255,8 @@ Align buildSelectButton(Size size, BuildContext context, Cars cars) {
         child: InkWell(
           onTap: () {
             showModalBottomSheet(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
                 context: context,
                 builder: (context) => TransactionForm(
                       cars: cars,
@@ -287,8 +299,10 @@ Align buildSelectButtonFromBrands(
         child: InkWell(
           onTap: () {
             showModalBottomSheet(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
                 context: context,
-                builder: (context) => TransactionFormFromBrands(
+                builder: (context) => TransactionFormBrands(
                       cars: cars,
                     ));
           },
@@ -353,12 +367,24 @@ class _DetailsPageFromBrandsState extends State<DetailsPageFromBrands> {
                   ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      Image.network(
-                        baseAssetUrl + widget.cars.vehicleImage,
+                      CachedNetworkImage(
+                        imageUrl: baseAssetUrl + widget.cars.vehicleImage,
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
                         height: size.width * 0.5,
                         width: size.width * 0.8,
                         fit: BoxFit.contain,
                       ),
+
+                      // Image.network(
+                      //   baseAssetUrl + widget.cars.vehicleImage,
+                      //   height: size.width * 0.5,
+                      //   width: size.width * 0.8,
+                      //   fit: BoxFit.contain,
+                      // ),
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,9 +478,8 @@ class _DetailsPageFromBrandsState extends State<DetailsPageFromBrands> {
                         ),
                       ),
                       Center(
-                        child: Text(
-                          widget.cars.vehicleDescription,
-                          textAlign: TextAlign.center,
+                        child: Html(
+                          data: widget.cars.vehicleDescription,
                         ),
                       ),
                     ],

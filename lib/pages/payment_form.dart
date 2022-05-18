@@ -21,7 +21,10 @@ class _PaymentFormState extends State<PaymentForm> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(
+            Icons.arrow_back,
+            color: themeData.primaryColor,
+          ),
           onPressed: () {
             Get.back();
           },
@@ -33,25 +36,37 @@ class _PaymentFormState extends State<PaymentForm> {
         color: themeData.backgroundColor,
         child: Center(
           child: Container(
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.all(16),
             height: size.height * 0.8,
             width: size.width * 0.95,
             child: Column(
               children: [
+                Text(
+                  'Payment Form',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: size.height * 0.05,
+                ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         buildUnderColor(themeData, 'Transaction Code'),
                         Text(
-                          widget.inv.transactionCode,
+                          widget.inv.transactionCode!,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 15),
                         )
                       ],
                     ),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         buildUnderColor(themeData, 'Amount'),
                         Text(
@@ -65,25 +80,27 @@ class _PaymentFormState extends State<PaymentForm> {
                 ),
                 SizedBox(height: size.height * 0.05),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         buildUnderColor(themeData, 'Car Name'),
                         Text(
-                          widget.inv.vehicleSpec.vehicleName,
+                          widget.inv.vehicleSpec!.vehicleName,
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 17),
+                              fontWeight: FontWeight.bold, fontSize: 15),
                         )
                       ],
                     ),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         buildUnderColor(themeData, 'Number Plate'),
                         Text(
-                          widget.inv.vehicleSpec.numberPlate,
+                          widget.inv.vehicleSpec!.numberPlate,
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 17),
+                              fontWeight: FontWeight.bold, fontSize: 15),
                         )
                       ],
                     )
@@ -91,19 +108,22 @@ class _PaymentFormState extends State<PaymentForm> {
                 ),
                 SizedBox(height: size.height * 0.05),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         buildUnderColor(themeData, 'Start Rent Date'),
                         Text(
                           widget.inv.startRentDate.toString(),
+                          textAlign: TextAlign.left,
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 17),
+                              fontWeight: FontWeight.bold, fontSize: 15),
                         )
                       ],
                     ),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         buildUnderColor(themeData, 'End Rent Date'),
                         Text(
@@ -128,6 +148,8 @@ class _PaymentFormState extends State<PaymentForm> {
                       child: InkWell(
                         onTap: () {
                           showModalBottomSheet(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)),
                               context: context,
                               builder: (context) =>
                                   PaymentFormBottom(invoice: widget.inv));
@@ -172,6 +194,7 @@ Container buildUnderColor(ThemeData themeData, String text) {
             Border(bottom: BorderSide(color: themeData.secondaryHeaderColor))),
     child: Text(
       text,
+      textAlign: TextAlign.left,
       style: TextStyle(color: themeData.primaryColor),
     ),
   );
