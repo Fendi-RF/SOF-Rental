@@ -14,6 +14,7 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lottie/lottie.dart';
 import 'package:unicons/unicons.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,7 +37,8 @@ class _TransactionFormState extends State<TransactionForm> {
   void initState() {
     super.initState();
     setState(() {
-      diff = daysBetween(dtStart ?? DateTime.now(), dtEnd ?? DateTime.now());
+      diff = daysBetween(dtStart ?? DateTime.now(),
+          dtEnd ?? DateTime.now().add(Duration(days: 1)));
     });
   }
 
@@ -68,6 +70,8 @@ class _TransactionFormState extends State<TransactionForm> {
     return (to.difference(from).inHours / 24).round();
   }
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -77,66 +81,73 @@ class _TransactionFormState extends State<TransactionForm> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            'Start Rent Date',
-          ),
-          DateTimePicker(
-              type: DateTimePickerType.date,
-              dateMask: 'd MMM, yyyy',
-              initialValue: DateTime.now().toString(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-              icon: Icon(Icons.event),
-              dateLabelText: 'Date',
-              onChanged: (val) => setState(() {
-                    dtStart = DateTime.tryParse(val);
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Text(
+                  'Start Rent Date',
+                ),
+                DateTimePicker(
+                    type: DateTimePickerType.date,
+                    dateMask: 'd MMM, yyyy',
+                    initialValue: DateTime.now().toString(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                    icon: Icon(Icons.event),
+                    dateLabelText: 'Date',
+                    onChanged: (val) => setState(() {
+                          dtStart = DateTime.tryParse(val);
+                          diff = daysBetween(dtStart!, dtEnd!);
+                        }),
+                    validator: (val) {
+                      // print(val);
+                      return null;
+                    },
+                    onSaved: (val) => setState(() {
+                          dtStart = DateTime.tryParse(val!);
+                          diff = daysBetween(dtStart!, dtEnd!);
+                        })),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    'End Rent Date',
+                  ),
+                ),
+                DateTimePicker(
+                  type: DateTimePickerType.date,
+                  dateMask: 'd MMM, yyyy',
+                  initialValue: DateTime.now().toString(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                  icon: Icon(Icons.event),
+                  dateLabelText: 'Date',
+                  onChanged: (val) => setState(() {
+                    dtEnd = DateTime.tryParse(val);
                     diff = daysBetween(dtStart!, dtEnd!);
                   }),
-              validator: (val) {
-                print(val);
-                return null;
-              },
-              onSaved: (val) => setState(() {
-                    dtStart = DateTime.tryParse(val!);
-                    diff = daysBetween(dtStart!, dtEnd!);
-                  })),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Text(
-              'End Rent Date',
+                  validator: (val) {
+                    // print(val);
+                    return null;
+                  },
+                  onSaved: (val) {
+                    setState(() {
+                      dtEnd = DateTime.tryParse(val!);
+                      diff = daysBetween(dtStart!, dtEnd!);
+                    });
+                  },
+                ),
+                BuildButton(
+                  data: 'Upload ID Card',
+                  onClicked: () {
+                    _pickImage();
+                  },
+                  icon: UniconsLine.picture,
+                  image: image,
+                  size: size,
+                ),
+              ],
             ),
-          ),
-          DateTimePicker(
-            type: DateTimePickerType.date,
-            dateMask: 'd MMM, yyyy',
-            initialValue: DateTime.now().toString(),
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-            icon: Icon(Icons.event),
-            dateLabelText: 'Date',
-            onChanged: (val) => setState(() {
-              dtEnd = DateTime.tryParse(val);
-              diff = daysBetween(dtStart!, dtEnd!);
-            }),
-            validator: (val) {
-              print(val);
-              return null;
-            },
-            onSaved: (val) {
-              setState(() {
-                dtEnd = DateTime.tryParse(val!);
-                diff = daysBetween(dtStart!, dtEnd!);
-              });
-            },
-          ),
-          BuildButton(
-            data: 'Upload ID Card',
-            onClicked: () {
-              _pickImage();
-            },
-            icon: UniconsLine.picture,
-            image: image,
-            size: size,
           ),
           Spacer(),
           _isLoading
@@ -148,7 +159,18 @@ class _TransactionFormState extends State<TransactionForm> {
                   width: size.width,
                   child: InkWell(
                     onTap: () {
-                      _rent();
+                      if (_formKey.currentState!.validate()) {
+                        if (image == null) {
+                          showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                    title: Text(
+                                        'Please insert your ID for guarantee purpose'),
+                                  ));
+                        } else {
+                          _rent();
+                        }
+                      }
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -188,12 +210,17 @@ class _TransactionFormState extends State<TransactionForm> {
     var res = await http.Response.fromStream(streamedRes);
     var body = jsonDecode(res.body);
     if (res.statusCode == 200) {
-      print('Success');
       showDialog(
           context: context,
           builder: (_) => AlertDialog(
                 title: Text(body['message']),
-                content: Text("Transaction Code: \n ${body['invoice_code']}"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Lottie.asset('assets/lottie/checkmark.json'),
+                    Text("Transaction Code: \n ${body['invoice_code']}"),
+                  ],
+                ),
                 actions: [
                   TextButton(
                       onPressed: () {
@@ -201,7 +228,9 @@ class _TransactionFormState extends State<TransactionForm> {
                       },
                       child: Text('Pay Now')),
                   TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.back();
+                      },
                       child: Text(
                         'Later',
                         style: TextStyle(color: Colors.grey),
@@ -209,7 +238,13 @@ class _TransactionFormState extends State<TransactionForm> {
                 ],
               ));
     } else {
-      _showMsg(body['message']);
+      // _showMsg(body['message']);
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: Text(body['status']),
+                content: Text(body['message']),
+              ));
     }
 
     setState(() {
@@ -218,22 +253,29 @@ class _TransactionFormState extends State<TransactionForm> {
   }
 }
 
-class TransactionFormFromBrands extends StatefulWidget {
-  const TransactionFormFromBrands({Key? key, required this.cars})
-      : super(key: key);
+class TransactionFormBrands extends StatefulWidget {
+  const TransactionFormBrands({Key? key, required this.cars}) : super(key: key);
 
   final VehicleSpec cars;
   @override
-  State<TransactionFormFromBrands> createState() =>
-      _TransactionFormFromBrandsState();
+  State<TransactionFormBrands> createState() => _TransactionFormBrandsState();
 }
 
-class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
+class _TransactionFormBrandsState extends State<TransactionFormBrands> {
   File? image;
-  DateTime? dtStart;
-  DateTime? dtEnd;
+  DateTime? dtStart = DateTime.now();
+  DateTime? dtEnd = DateTime.now().add(Duration(days: 1));
   int? diff;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      diff = daysBetween(dtStart ?? DateTime.now(),
+          dtEnd ?? DateTime.now().add(Duration(days: 1)));
+    });
+  }
 
   _showMsg(msg) {
     final snackBar = SnackBar(
@@ -263,6 +305,8 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
     return (to.difference(from).inHours / 24).round();
   }
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -272,56 +316,73 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            'Start Rent Date',
-          ),
-          DateTimePicker(
-            type: DateTimePickerType.date,
-            dateMask: 'd MMM, yyyy',
-            initialValue: DateTime.now().toString(),
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-            icon: Icon(Icons.event),
-            dateLabelText: 'Date',
-            onChanged: (val) => print(val),
-            validator: (val) {
-              print(val);
-              return null;
-            },
-            onSaved: (val) => dtStart = DateTime.tryParse(val!),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Text(
-              'End Rent Date',
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Text(
+                  'Start Rent Date',
+                ),
+                DateTimePicker(
+                    type: DateTimePickerType.date,
+                    dateMask: 'd MMM, yyyy',
+                    initialValue: DateTime.now().toString(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                    icon: Icon(Icons.event),
+                    dateLabelText: 'Date',
+                    onChanged: (val) => setState(() {
+                          dtStart = DateTime.tryParse(val);
+                          diff = daysBetween(dtStart!, dtEnd!);
+                        }),
+                    validator: (val) {
+                      // print(val);
+                      return null;
+                    },
+                    onSaved: (val) => setState(() {
+                          dtStart = DateTime.tryParse(val!);
+                          diff = daysBetween(dtStart!, dtEnd!);
+                        })),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    'End Rent Date',
+                  ),
+                ),
+                DateTimePicker(
+                  type: DateTimePickerType.date,
+                  dateMask: 'd MMM, yyyy',
+                  initialValue: DateTime.now().toString(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                  icon: Icon(Icons.event),
+                  dateLabelText: 'Date',
+                  onChanged: (val) => setState(() {
+                    dtEnd = DateTime.tryParse(val);
+                    diff = daysBetween(dtStart!, dtEnd!);
+                  }),
+                  validator: (val) {
+                    // print(val);
+                    return null;
+                  },
+                  onSaved: (val) {
+                    setState(() {
+                      dtEnd = DateTime.tryParse(val!);
+                      diff = daysBetween(dtStart!, dtEnd!);
+                    });
+                  },
+                ),
+                BuildButton(
+                  data: 'Upload ID Card',
+                  onClicked: () {
+                    _pickImage();
+                  },
+                  icon: UniconsLine.picture,
+                  image: image,
+                  size: size,
+                ),
+              ],
             ),
-          ),
-          DateTimePicker(
-            type: DateTimePickerType.date,
-            dateMask: 'd MMM, yyyy',
-            initialValue: DateTime.now().toString(),
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-            icon: Icon(Icons.event),
-            dateLabelText: 'Date',
-            onChanged: (val) => dtStart,
-            validator: (val) {
-              print(val);
-              return null;
-            },
-            onSaved: (val) {
-              dtEnd = DateTime.tryParse(val!);
-              diff = daysBetween(dtStart!, dtEnd!);
-            },
-          ),
-          BuildButton(
-            data: 'Upload ID Card',
-            onClicked: () {
-              _pickImage();
-            },
-            icon: UniconsLine.picture,
-            image: image,
-            size: size,
           ),
           Spacer(),
           _isLoading
@@ -333,7 +394,18 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
                   width: size.width,
                   child: InkWell(
                     onTap: () {
-                      _rent();
+                      if (_formKey.currentState!.validate()) {
+                        if (image == null) {
+                          showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                    title: Text(
+                                        'Please insert your ID for guarantee purpose'),
+                                  ));
+                        } else {
+                          _rent();
+                        }
+                      }
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -373,12 +445,17 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
     var res = await http.Response.fromStream(streamedRes);
     var body = jsonDecode(res.body);
     if (res.statusCode == 200) {
-      // _showMsg(body['message']);
       showDialog(
           context: context,
           builder: (_) => AlertDialog(
-                title: Text(body['status']),
-                content: Text(body['message']),
+                title: Text(body['message']),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Lottie.asset('assets/lottie/checkmark.json'),
+                    Text("Transaction Code: \n ${body['invoice_code']}"),
+                  ],
+                ),
                 actions: [
                   TextButton(
                       onPressed: () {
@@ -386,7 +463,9 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
                       },
                       child: Text('Pay Now')),
                   TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.back();
+                      },
                       child: Text(
                         'Later',
                         style: TextStyle(color: Colors.grey),
@@ -394,8 +473,13 @@ class _TransactionFormFromBrandsState extends State<TransactionFormFromBrands> {
                 ],
               ));
     } else {
-      // print(body['message']);
-      throw "wtf";
+      // _showMsg(body['message']);
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: body['status'],
+                content: body['message'],
+              ));
     }
 
     setState(() {

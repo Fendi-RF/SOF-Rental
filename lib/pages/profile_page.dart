@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/data/API/requests.dart';
 import 'package:car_rental_app_ui/data/models/invoice.dart';
+import 'package:car_rental_app_ui/pages/history_page.dart';
 import 'package:car_rental_app_ui/pages/login_page.dart';
 import 'package:car_rental_app_ui/pages/payment_form.dart';
+import 'package:car_rental_app_ui/widgets/about_us.dart';
 import 'package:car_rental_app_ui/widgets/bottom_nav_bar.dart';
 import 'package:car_rental_app_ui/widgets/carDetailsPage/bottom_sheet.dart';
 import 'package:car_rental_app_ui/widgets/homePage/category.dart';
@@ -42,16 +44,17 @@ class _ProfilePageState extends State<ProfilePage> {
   String? amount;
 
   List<Invoice>? invoice;
+  List<Invoice>? history;
 
   @override
   void initState() {
     super.initState();
+    checkPay();
     checkJson();
     setState(() {
       user = _loadUserData();
       _invoice = Request().getInvoice();
       _history = Request().getHistory();
-      checkPay();
     });
 
     // _loadUserData();
@@ -73,7 +76,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void checkPay() async {
     invoice = await Request().getInvoice();
-    print(invoice?.map((e) => e).toList());
+    // print(invoice?.map((e) => e).toList());
+    history = await Request().getHistory();
   }
 
   void checkJson() async {}
@@ -85,21 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Future _pickImage() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image == null) {
-        return;
-      }
-      final imageTemp = File(image.path);
-      setState(() {
-        (_image = imageTemp);
-        print(image.path);
-      });
-    } on PlatformException catch (e) {
-      print('Failed to pick image : ' + e.toString());
-    }
-  }
+  var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +97,18 @@ class _ProfilePageState extends State<ProfilePage> {
     ThemeData themeData = Theme.of(context);
 
     return Scaffold(
+      drawer: AboutUsDrawer(themeData: themeData),
+      extendBodyBehindAppBar: true,
       backgroundColor: themeData.backgroundColor,
       bottomNavigationBar: buildBottomNavBar(2, size, themeData),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(60),
+        child: AppBar(
+          iconTheme: IconThemeData(color: themeData.secondaryHeaderColor),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,10 +141,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
                   }),
             ),
+            TextButton(
+              onPressed: () {
+                _showDialog();
+              },
+              child: Text('Log Out', style: TextStyle(color: Colors.red)),
+            ),
             // Profile(name: user.name),
 
-            buildCategory('Activity Status', size, themeData, () {}),
-
+            buildCategory('Unpaid Rent', size, themeData, () {}),
             FutureBuilder(
                 future: _invoice,
                 builder:
@@ -154,6 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     return ListView(
                       shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
                       children: inv.map((e) => buildInvoiceTile(e)).toList(),
                     );
                   } else {
@@ -161,12 +167,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 }),
             buildCategory('Recent History', size, themeData, () {}),
-            Container(
-              padding: EdgeInsets.all(32.0),
-              child: Center(
-                child: Text('There is no history'),
-              ),
-            ),
             FutureBuilder(
                 future: _history,
                 builder:
@@ -175,19 +175,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     List<Invoice> inv = snapshot.data;
 
                     return ListView(
+                      physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      children: inv.map((e) => buildHistory(e)).toList(),
+                      children: inv.map((e) => buildHistoryTile(e)).toList(),
                     );
                   } else {
                     return Center(child: CircularProgressIndicator());
                   }
                 }),
-            TextButton(
-              onPressed: () {
-                _showDialog();
-              },
-              child: Text('Log Out', style: TextStyle(color: Colors.red)),
-            )
           ],
         ),
       ),
@@ -203,11 +198,16 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               content: Text('Are you sure you want to log out?'),
               actions: [
-                TextButton(
-                    onPressed: () {
-                      _logout();
-                    },
-                    child: Text('Yes', style: TextStyle(color: Colors.red))),
+                _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : TextButton(
+                        onPressed: () {
+                          _logout();
+                        },
+                        child:
+                            Text('Yes', style: TextStyle(color: Colors.red))),
                 TextButton(
                   onPressed: () {
                     Get.back();
@@ -219,6 +219,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _logout() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     var response = await Network().logout('logout');
     var body = jsonDecode(response.body);
     if (response.statusCode == 200) {
@@ -227,6 +231,10 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       _showMsg(body['message']);
     }
+
+    setState(() {
+      _isLoading = true;
+    });
   }
 
   InkWell buildInvoiceTile(Invoice inv) {
@@ -237,193 +245,46 @@ class _ProfilePageState extends State<ProfilePage> {
         ));
       },
       child: ListTile(
-        leading: Icon(UniconsLine.wallet),
         title: Text(
-            '${inv.transactionCode}      |     ${inv.vehicleSpec.vehicleName}'),
+          '${inv.vehicleSpec?.vehicleName}',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        subtitle: Text('${inv.transactionCode}'),
+        trailing: Text(
+          'Rp${inv.rentPrice}',
+          style: TextStyle(color: Colors.amber, fontSize: 18),
+        ),
       ),
     );
   }
 
-  ExpansionTile buildInvoice(Invoice inv, Size size, ThemeData themeData) {
-    return ExpansionTile(
-      leading: Icon(UniconsLine.wallet),
-      title: Text(
-          inv.transactionCode + '     |      ' + inv.vehicleSpec.vehicleName),
-      trailing: Icon(Icons.arrow_drop_down),
-      children: [
-        Container(
-          padding: EdgeInsets.all(8),
-          height: size.height * 0.5,
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      Text('Start Rent Date'),
-                      Text(inv.startRentDate.toString())
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text('End Rent Date'),
-                      Text(inv.endRentDate.toString())
-                    ],
-                  )
-                ],
-              ),
-              SizedBox(
-                height: size.height * 0.015,
-              ),
-              Text(inv.status),
-              Form(
-                child: Container(
-                  color: themeData.cardColor,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        decoration: InputDecoration(hintText: 'Payer\'s Name'),
-                        onChanged: (v) {
-                          setState(() {
-                            payerName = v;
-                          });
-                        },
-                      ),
-                      DropdownButton(
-                          value: dropValue,
-                          items: <String>['BCA', 'BRI', 'BNI', 'Mandiri']
-                              .map<DropdownMenuItem<String>>((e) {
-                            return DropdownMenuItem<String>(
-                              child: Text(e),
-                              value: e,
-                            );
-                          }).toList(),
-                          onChanged: (String? v) {
-                            setState(() {
-                              dropValue = v!;
-                            });
-                          }),
-                      TextFormField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: 'Amount',
-                        ),
-                        onChanged: (v) {
-                          setState(() {
-                            amount = v;
-                          });
-                        },
-                      ),
-                      BuildButton(
-                          data: 'Upload Payment Proof',
-                          onClicked: _pickImage,
-                          icon: UniconsLine.image,
-                          image: _image,
-                          size: size)
-                    ],
-                  ),
-                ),
-              ),
-              Spacer(),
-              _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  : SizedBox(
-                      height: size.height * 0.07,
-                      width: size.width,
-                      child: InkWell(
-                        onTap: () async {
-                          setState(() {
-                            _isLoading = true;
-                          });
-
-                          var streamedResp = await Network().postMultipartPay(
-                              'invoice/${inv.transactionCode}',
-                              payerName!,
-                              dropValue,
-                              amount!,
-                              _image!);
-
-                          var res =
-                              await http.Response.fromStream(streamedResp);
-                          var body = jsonDecode(res.body);
-
-                          if (res.statusCode == 200) {
-                            showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                      title: Text(body['status']),
-                                      content: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              Text(
-                                                  "Required amount : ${body['required']}"),
-                                              Text(
-                                                  "Paid amount : ${body['your_money']}")
-                                            ],
-                                          ),
-                                          Text(
-                                              "Cashback : ${body['cashback']}"),
-                                          Text(
-                                              'You can pick up your rental car at the closest SOF Rent Area'),
-                                        ],
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {}, child: Text('Ok'))
-                                      ],
-                                    ));
-                          } else {
-                            // _showMsg(body['message']);
-                            throw "wtf";
-                          }
-                          setState(() {
-                            _isLoading = false;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: const Color(0xff3b22a1),
-                          ),
-                          child: Align(
-                            child: Text(
-                              'Pay',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.lato(
-                                fontSize: size.height * 0.025,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-            ],
-          ),
-        )
-      ],
+  InkWell buildHistoryTile(Invoice inv) {
+    return InkWell(
+      onTap: () {
+        Get.to(HistoryPage(
+          inv: inv,
+        ));
+      },
+      child: ListTile(
+        title: Text(
+          '${inv.vehicleSpec?.vehicleName}',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        subtitle: Text('${inv.transactionCode}'),
+        trailing: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Rp${inv.rentPrice}',
+              style: TextStyle(color: Colors.green, fontSize: 18),
+            ),
+            Text('Paid at : ${inv.payment?.paidDate}')
+          ],
+        ),
+      ),
     );
   }
-
-  ExpansionTile buildHistory(Invoice inv) {
-    return ExpansionTile(
-      leading: Icon(UniconsLine.wallet),
-      title: Text(
-          inv.transactionCode + '      |      ' + inv.vehicleSpec.vehicleName),
-      trailing: Icon(Icons.arrow_drop_down),
-    );
-  }
-
-  void _pay() async {}
 }
 
 class Profile extends StatelessWidget {

@@ -69,7 +69,7 @@ class Network {
   }
 
   postMultipartPay(
-      apiURL, String? name, String? bank, String? amount, File file) async {
+      apiURL, String? name, String? bank, String amount, File file) async {
     var fullUrl = Uri.parse(_url + apiURL);
     await getToken();
     var pic = await http.MultipartFile.fromPath('payment_proof', file.path);
@@ -78,7 +78,7 @@ class Network {
       ..fields['payer_name'] = name.toString()
       ..fields['bank'] = bank.toString()
       ..files.add(pic)
-      ..fields['amount'] = amount.toString();
+      ..fields['amount'] = amount;
     return await request.send();
 
     // return await response.stream.toBytes();

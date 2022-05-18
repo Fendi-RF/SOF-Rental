@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/data/models/brands.dart';
 import 'package:car_rental_app_ui/data/models/cars%20copy.dart';
@@ -50,8 +51,16 @@ class TopBrandJson extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: brands
                   .map((Brands brand) => buildBrandLogofromJson(
-                      Image.network(
-                        baseAssetUrl + brand.brandImage,
+                      // Image.network(
+                      //   baseAssetUrl + brand.brandImage,
+                      //   height: size.height * 0.05,
+                      // )
+                      CachedNetworkImage(
+                        imageUrl: baseAssetUrl + brand.brandImage,
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
                         height: size.height * 0.05,
                       ),
                       size,

@@ -9,6 +9,7 @@ import 'package:car_rental_app_ui/data/cars.dart';
 import 'package:car_rental_app_ui/data/models/user_model.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
 import 'package:car_rental_app_ui/pages/login_page.dart';
+import 'package:car_rental_app_ui/widgets/about_us.dart';
 import 'package:car_rental_app_ui/widgets/bottom_nav_bar.dart';
 import 'package:car_rental_app_ui/widgets/homePage/category.dart';
 
@@ -47,6 +48,7 @@ class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _getTypes;
 
   final TextEditingController controller = TextEditingController();
+  var scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool _isSearching = false;
 
@@ -62,7 +64,7 @@ class _HomePageState extends State<HomePage> {
     var map = jsonDecode(localStorage.getString('user') ?? '');
     Network().token = jsonDecode(localStorage.getString('token').toString());
     User user = User.fromJson(map);
-    print(user.avatar);
+    // print(user.avatar);
   }
 
   _loadApi() async {
@@ -92,10 +94,17 @@ class _HomePageState extends State<HomePage> {
     ThemeData themeData = Theme.of(context);
 
     return Scaffold(
+      drawer: AboutUsDrawer(themeData: themeData),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60.0), //appbar size
         child: AppBarMain(
-            themeData: themeData, size: size, onPressed: _showDialog),
+            themeData: themeData,
+            size: size,
+            iconbutton: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () => scaffoldKey.currentState!.openDrawer(),
+            ),
+            onPressedEnd: _showDialog),
       ),
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -104,7 +113,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await Future.delayed(Duration(seconds: 15));
+            await Future.delayed(Duration(seconds: 1));
             setState(() {
               _loadApi();
             });
@@ -132,7 +141,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: Align(
                           child: Text(
-                            'Fast & Easy To Rent A Car',
+                            'Fast & Easy Way To Rent A Car',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: themeData.secondaryHeaderColor,
@@ -168,79 +177,76 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(
                               width: size.width * 0.65,
                               height: size.height * 0.06,
-                              child: Expanded(
-                                child: TextField(
-                                  onChanged: (val) {
-                                    setState(() {
-                                      if (val != '') {
-                                        _isSearching = true;
-                                      } else {
-                                        _isSearching = false;
-                                      }
+                              child: TextField(
+                                onChanged: (val) {
+                                  setState(() {
+                                    if (val != '') {
+                                      _isSearching = true;
+                                    } else {
+                                      _isSearching = false;
+                                    }
 
-                                      carsSearch = cars
-                                          .where((element) => (element
-                                              .vehicleName
-                                              .toLowerCase()
-                                              .contains(val.toLowerCase())))
-                                          .toList();
-                                    });
-                                  },
-                                  controller: controller,
-                                  // onChanged: (value) => final suh,
-                                  //searchbar
-                                  style: GoogleFonts.poppins(
+                                    carsSearch = cars
+                                        .where((element) => (element.vehicleName
+                                            .toLowerCase()
+                                            .contains(val.toLowerCase())))
+                                        .toList();
+                                  });
+                                },
+                                controller: controller,
+                                // onChanged: (value) => final suh,
+                                //searchbar
+                                style: GoogleFonts.poppins(
+                                  color: themeData.primaryColor,
+                                ),
+                                textInputAction: TextInputAction.next,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.only(
+                                    top: size.height * 0.01,
+                                    left: size.width * 0.04,
+                                    right: size.width * 0.04,
+                                  ),
+                                  enabledBorder: textFieldBorder(),
+                                  focusedBorder: textFieldBorder(),
+                                  border: textFieldBorder(),
+                                  hintStyle: GoogleFonts.poppins(
                                     color: themeData.primaryColor,
                                   ),
-                                  textInputAction: TextInputAction.next,
-                                  decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.only(
-                                      top: size.height * 0.01,
-                                      left: size.width * 0.04,
-                                      right: size.width * 0.04,
-                                    ),
-                                    enabledBorder: textFieldBorder(),
-                                    focusedBorder: textFieldBorder(),
-                                    border: textFieldBorder(),
-                                    hintStyle: GoogleFonts.poppins(
-                                      color: themeData.primaryColor,
-                                    ),
-                                    hintText: 'Search a car',
-                                  ),
+                                  hintText: 'Search a car',
                                 ),
                               ),
                             ),
-                            _isSearching
-                                ? Padding(
-                                    padding: EdgeInsets.only(
-                                      left: size.width * 0.025,
-                                    ),
-                                    child: Container(
-                                      height: size.height * 0.06,
-                                      width: size.width * 0.14,
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(10),
-                                        ),
-                                        color: Color(
-                                            0xff3b22a1), //filters bg color
-                                      ),
-                                      child: IconButton(
-                                        icon: Icon(
-                                          UniconsLine.filter,
-                                          color: Colors.white,
-                                          size: size.height * 0.032,
-                                        ),
-                                        onPressed: () {
-                                          showModalBottomSheet(
-                                              isScrollControlled: true,
-                                              context: context,
-                                              builder: (context) => SortBy());
-                                        },
-                                      ),
-                                    ),
-                                  )
-                                : Container()
+                            // _isSearching
+                            //     ? Padding(
+                            //         padding: EdgeInsets.only(
+                            //           left: size.width * 0.025,
+                            //         ),
+                            //         child: Container(
+                            //           height: size.height * 0.06,
+                            //           width: size.width * 0.14,
+                            //           decoration: const BoxDecoration(
+                            //             borderRadius: BorderRadius.all(
+                            //               Radius.circular(10),
+                            //             ),
+                            //             color: Color(
+                            //                 0xff3b22a1), //filters bg color
+                            //           ),
+                            //           child: IconButton(
+                            //             icon: Icon(
+                            //               UniconsLine.filter,
+                            //               color: Colors.white,
+                            //               size: size.height * 0.032,
+                            //             ),
+                            //             onPressed: () {
+                            //               showModalBottomSheet(
+                            //                   isScrollControlled: true,
+                            //                   context: context,
+                            //                   builder: (context) => SortBy());
+                            //             },
+                            //           ),
+                            //         ),
+                            //       )
+                            //     : Container()
                           ],
                         ),
                       ),
@@ -255,28 +261,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      // drawer: Drawer(
-      //   child: ListView(
-      //     padding: EdgeInsets.zero,
-      //     children: [
-      //       DrawerHeader(
-      //         child: Column(
-      //           mainAxisAlignment: MainAxisAlignment.start,
-      //           children: [
-      //             Padding(
-      //               padding: const EdgeInsets.all(8.0),
-      //               child: (CircleAvatar(
-      //                 child: Text('D'),
-      //               )),
-      //             ),
-      //             Text('Data DATA Data DATA Data DATA Data DATA')
-      //           ],
-      //         ),
-      //         decoration: BoxDecoration(color: Colors.blue),
-      //       )
-      //     ],
-      //   ),
-      // ),
     );
   }
 
@@ -309,6 +293,10 @@ class _HomePageState extends State<HomePage> {
         buildMostRented(size, themeData, _getCars),
       ],
     );
+  }
+
+  void _showDrawer(BuildContext context) {
+    Scaffold.of(context).openDrawer();
   }
 
   void _showDialog() {

@@ -5,12 +5,14 @@ import 'package:car_rental_app_ui/data/API/requests.dart';
 import 'package:car_rental_app_ui/pages/brands_details.dart';
 import 'package:car_rental_app_ui/pages/cars_details.dart';
 import 'package:car_rental_app_ui/pages/login_page.dart';
+import 'package:car_rental_app_ui/widgets/about_us.dart';
 import 'package:car_rental_app_ui/widgets/app_bar.dart';
 import 'package:car_rental_app_ui/widgets/bottom_nav_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:unicons/unicons.dart';
 
 import '../data/models/cars copy.dart';
 
@@ -23,6 +25,7 @@ class AllCarsPage extends StatefulWidget {
 
 class _AllCarsPageState extends State<AllCarsPage> {
   late Future _getCars;
+  var scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Cars> cars = [];
 
@@ -43,6 +46,10 @@ class _AllCarsPageState extends State<AllCarsPage> {
     }
   }
 
+  void _showDrawer() {
+    scaffoldKey.currentState?.openEndDrawer();
+  }
+
   _showMsg(msg) {
     final snackBar = SnackBar(
       content: Text(msg),
@@ -55,12 +62,17 @@ class _AllCarsPageState extends State<AllCarsPage> {
     Size size = MediaQuery.of(context).size; //check the size of device
     ThemeData themeData = Theme.of(context);
     return Scaffold(
+      drawer: AboutUsDrawer(themeData: themeData),
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(60),
           child: AppBarMain(
             size: size,
             themeData: themeData,
-            onPressed: _showDialog,
+            iconbutton: IconButton(
+              icon: Icon(UniconsLine.info_circle),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+            onPressedEnd: _showDialog,
           )),
       body: SingleChildScrollView(
         child: Column(

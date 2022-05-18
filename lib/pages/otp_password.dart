@@ -90,7 +90,7 @@ class _ResetPassVerifState extends State<ResetPassVerif> {
                       setState(() {
                         otp = onChanged;
                       });
-                      print(otp);
+                      // print(otp);
                     },
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),

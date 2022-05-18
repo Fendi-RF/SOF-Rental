@@ -35,24 +35,24 @@ class Invoice {
     required this.vehicleSpec,
   });
 
-  int id;
-  String transactionCode;
-  String userId;
-  String idVehicle;
-  DateTime startRentDate;
-  DateTime endRentDate;
-  dynamic vehiclePicked;
-  dynamic vehicleReturned;
-  String status;
-  dynamic reason;
-  String guaranteRent1;
-  dynamic guaranteRent2;
-  dynamic guaranteRent3;
-  String rentPrice;
-  DateTime createdAt;
-  DateTime updatedAt;
+  int? id;
+  String? transactionCode;
+  String? userId;
+  String? idVehicle;
+  DateTime? startRentDate;
+  DateTime? endRentDate;
+  dynamic? vehiclePicked;
+  dynamic? vehicleReturned;
+  String? status;
+  dynamic? reason;
+  String? guaranteRent1;
+  dynamic? guaranteRent2;
+  dynamic? guaranteRent3;
+  String? rentPrice;
+  DateTime? createdAt;
+  DateTime? updatedAt;
   Payment? payment;
-  VehicleSpec vehicleSpec;
+  VehicleSpec? vehicleSpec;
 
   factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
         id: json["id"],
@@ -80,8 +80,8 @@ class Invoice {
         "transaction_code": transactionCode,
         "user_id": userId,
         "id_vehicle": idVehicle,
-        "start_rent_date": startRentDate.toIso8601String(),
-        "end_rent_date": endRentDate.toIso8601String(),
+        "start_rent_date": startRentDate?.toIso8601String(),
+        "end_rent_date": endRentDate?.toIso8601String(),
         "vehicle_picked": vehiclePicked,
         "vehicle_returned": vehicleReturned,
         "status": status,
@@ -90,9 +90,9 @@ class Invoice {
         "guarante_rent_2": guaranteRent2,
         "guarante_rent_3": guaranteRent3,
         "rent_price": rentPrice,
-        "created_at": createdAt.toIso8601String(),
-        "updated_at": updatedAt.toIso8601String(),
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
         "payment": payment?.toJson(),
-        "vehicle_spec": vehicleSpec.toJson(),
+        "vehicle_spec": vehicleSpec?.toJson(),
       };
 }

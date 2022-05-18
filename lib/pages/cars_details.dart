@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:car_rental_app_ui/data/API/api_url.dart';
 import 'package:car_rental_app_ui/data/API/requests.dart';
 import 'package:car_rental_app_ui/data/models/brands.dart';
@@ -43,68 +44,9 @@ class _CarsDetailsState extends State<CarsDetails> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60.0),
-        child: AppBar(
-          bottomOpacity: 0.0,
-          elevation: 0.0,
-          shadowColor: Colors.transparent,
-          backgroundColor: themeData.backgroundColor,
-          leading: Padding(
-            padding: EdgeInsets.only(
-              left: size.width * 0.05,
-            ),
-            child: SizedBox(
-              height: size.width * 0.01,
-              width: size.width * 0.1,
-              child: InkWell(
-                onTap: () {
-                  Get.back(); //go back to home page
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: themeData.cardColor,
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(10),
-                    ),
-                  ),
-                  child: Icon(
-                    UniconsLine.multiply,
-                    color: themeData.secondaryHeaderColor,
-                    size: size.height * 0.025,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          leadingWidth: size.width * 0.15,
-          title: Image.asset(
-            themeData.brightness == Brightness.dark
-                ? 'assets/icons/SOF_Rent_White.png'
-                : 'assets/icons/SOF_Rent_Black.png',
-            height: size.height * 0.12,
-            width: size.width * 0.35,
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: Icon(
-                UniconsLine.search_alt,
-                color: Theme.of(context).secondaryHeaderColor,
-              ),
-              onPressed: () {},
-            ),
-            IconButton(
-                icon: Icon(
-                  UniconsLine.sort,
-                  color: Theme.of(context).secondaryHeaderColor,
-                ),
-                onPressed: () {
-                  setState(() {
-                    sort = 1;
-                  });
-                })
-          ],
+        child: AppBarDetail(
+          size: size,
+          themeData: themeData,
         ),
       ),
       body: CarsFromJsonWidget(
@@ -132,6 +74,7 @@ class CarsFromJsonWidget extends StatelessWidget {
         if (snapshot.hasData) {
           List<Cars> cars = snapshot.data;
           return ListView(
+            physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             children: cars.map((Cars car) => buildCarList(car, size)).toList(),
           );
@@ -197,10 +140,17 @@ Widget buildCarList(Cars cars, Size size) {
                   ]),
             ),
             Positioned.fill(
-              child: Image.network(
-                baseAssetUrl + cars.vehicleImage,
+              child: CachedNetworkImage(
+                imageUrl: baseAssetUrl + cars.vehicleImage,
+                placeholder: (context, url) =>
+                    const Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
                 alignment: Alignment.centerRight,
               ),
+              // child: Image.network(
+              //   baseAssetUrl + cars.vehicleImage,
+              //   alignment: Alignment.centerRight,
+              // ),
             ),
           ],
         ),
@@ -246,10 +196,17 @@ Widget buildCarListFromBrands(VehicleSpec cars, Size size) {
                   ]),
             ),
             Positioned.fill(
-              child: Image.network(
-                baseAssetUrl + cars.vehicleImage,
+              child: CachedNetworkImage(
+                imageUrl: baseAssetUrl + cars.vehicleImage,
+                placeholder: (context, url) =>
+                    const Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
                 alignment: Alignment.centerRight,
               ),
+              // child: Image.network(
+              //   baseAssetUrl + cars.vehicleImage,
+              //   alignment: Alignment.centerRight,
+              // ),
             ),
           ],
         ),

@@ -92,7 +92,7 @@ class Request {
           .map<Invoice>((dynamic i) => Invoice.fromJson(i))
           .where((e) => e.payment.id == null)
           .toList()
-        ..sort((Invoice b, Invoice a) => a.createdAt.compareTo(b.createdAt));
+        ..sort((Invoice b, Invoice a) => a.createdAt!.compareTo(b.createdAt!));
       ;
       return inv;
     } else {
@@ -109,7 +109,7 @@ class Request {
           .map<Invoice>((dynamic i) => Invoice.fromJson(i))
           .where((element) => element.payment.id != null)
           .toList()
-        ..sort((Invoice b, Invoice a) => a.createdAt.compareTo(b.createdAt));
+        ..sort((Invoice b, Invoice a) => a.createdAt!.compareTo(b.createdAt!));
       return inv;
     } else {
       throw "Can not connect to the API";

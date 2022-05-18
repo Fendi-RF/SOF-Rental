@@ -14,44 +14,30 @@ class AppBarMain extends StatelessWidget {
     Key? key,
     required this.themeData,
     required this.size,
-    required this.onPressed,
+    required this.iconbutton,
+    required this.onPressedEnd,
   }) : super(key: key);
 
   final ThemeData themeData;
   final Size size;
-  final VoidCallback onPressed;
+  final IconButton iconbutton;
+  final VoidCallback onPressedEnd;
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      iconTheme: IconThemeData(color: themeData.secondaryHeaderColor),
       bottomOpacity: 0.0,
       elevation: 0.0,
       shadowColor: Colors.transparent,
       backgroundColor: themeData.backgroundColor,
-      leading: Padding(
-        padding: EdgeInsets.only(
-          left: size.width * 0.05,
-        ),
-        child: SizedBox(
-          height: size.width * 0.2,
-          width: size.width * 0.2,
-          child: Container(
-            decoration: BoxDecoration(
-              color: themeData.backgroundColor.withOpacity(0.03),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-            ),
-          ),
-        ),
-      ),
-      automaticallyImplyLeading: false,
+      // automaticallyImplyLeading: false,
       titleSpacing: 0,
       leadingWidth: size.width * 0.15,
       title: Image.asset(
           themeData.brightness == Brightness.dark
               ? 'assets/icons/SOF_Rent_White.png'
-              : 'assets/icons/SOF_Rent_Black.png', //logo
+              : 'assets/icons/SOF_Rent_SemiBlack.png', //logo
           height: size.height * 0.12),
       centerTitle: true,
       actions: <Widget>[
@@ -76,7 +62,7 @@ class AppBarMain extends StatelessWidget {
                   size: size.height * 0.025,
                 ),
                 onPressed: () {
-                  onPressed();
+                  onPressedEnd();
                 },
               ),
             ),
