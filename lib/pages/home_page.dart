@@ -329,6 +329,8 @@ class _HomePageState extends State<HomePage> {
     if (response.statusCode == 200) {
       _showMsg(body['message']);
       Get.off(LoginPage());
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
     } else {
       _showMsg(body['message']);
     }

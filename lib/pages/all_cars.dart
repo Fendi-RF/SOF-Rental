@@ -12,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unicons/unicons.dart';
 
 import '../data/models/cars copy.dart';
@@ -156,6 +157,8 @@ class _AllCarsPageState extends State<AllCarsPage> {
     if (response.statusCode == 200) {
       _showMsg(body['message']);
       Get.off(LoginPage());
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
     } else {
       _showMsg(body['message']);
     }

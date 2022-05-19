@@ -224,6 +224,8 @@ class _ProfilePageState extends State<ProfilePage> {
     if (response.statusCode == 200) {
       _showMsg(body['message']);
       Get.off(LoginPage());
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
     } else {
       _showMsg(body['message']);
     }
